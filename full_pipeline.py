@@ -33,6 +33,9 @@ def vcf_filter1(vcf, filter_vcf):
                     print("WRONG BASE SOMETHING WRONG AHHH")
             
             new_file.write(line + '\t' + ':A=' + str(numA) + ',' + 'G=' + str(numG) + ',' + '\n')
+			"""Sample Output into filtered file
+			scaffold_0	26626	.	A	G	.	.	AC=1;AF=0.00833333333333;SB=2.79069767442	GT:AC:AF:SB:NC	0/0:1:0.00833333333333:2.79069767442:+A=77,-A=42,-G=1,
+			:A=119,G=1,"""
             #print(line + '\t' + ':A=' + str(numA) + ',' + 'G=' + str(numG) + ',' + '\n')
                 
             #print(n2)
@@ -47,7 +50,7 @@ def vcf_filter1(vcf, filter_vcf):
 #vcf_filter1('HA2.vcf','HA2_filtered.txt')
 #vcf_filter1('HA3.vcf','HA3_filtered.txt')
 
-def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0)
+def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
 
     for line in open_vcf:
         vcf_line = line.split('\t')
@@ -118,7 +121,7 @@ def count(file):
                 if "AC=1" in line:      
                     count_a_to_g = count_a_to_g
                 else: 
-                    count_a_to_g = count_a_to_g + 1  
+                    count_a_to_g = count_a_to_g + 1  #change to +=1?
         
 
     print ("Number of A-to-I Editing Sites is:", count_a_to_g)

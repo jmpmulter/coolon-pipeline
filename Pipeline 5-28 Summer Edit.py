@@ -12,6 +12,12 @@ import os
 ## init gets user input for paramaters of the program.
 ##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file
 def init(mode = 1, in_path="",):
+	os.mkdir(./inputs) #for raw input files
+	#note: when testing, make sure that the current path is still . and is NOT ./inputs
+	#if necessary, reset cursor
+	os.mkdir(./intermeds) #files produced internally (filtered versions, etc) that end user is not expected to see
+	os.mkdir(./outputs) #files that the end user would want to see (comparison files, pxl, excel)
+	
 	numtypes=0
 	typenames ={}
 	ed_type = ""
@@ -21,6 +27,7 @@ def init(mode = 1, in_path="",):
 		typenames={"type1":CL,"type2":OA}
 		ed_type = "AG"
 		
+		
 	elif mode ==1:
 		#user input
 		print("INPUT INTSTRUCTIONS")
@@ -29,7 +36,12 @@ def init(mode = 1, in_path="",):
 	elif mode ==2:
 		# read input from a text file at in_path
 	else:
-		#print error and exit
+		#print error and exit		
+	for i in range(0,numtypes): #make sure this works, flexibly
+		dirname = "./inputs/numtypes/type{}"format(str(i))
+		os.mkdir(dirname) 
+	#store typenames globally
+	#store editing type globally
 		
 	
 
