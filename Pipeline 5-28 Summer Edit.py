@@ -18,26 +18,28 @@ if __name__ == "__main__": #sets up a main area. This will not work well if impo
 	dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
 	os.chdir(dir_path) #move the cwd to the dir_path
 	cwd = os.getcwd() #This will be useful for doing things within the current directory
-	#0=[.gff3,filt.gff3], 1=*.vcf, 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output]
+	#0=[.gff3,filt.gff3, init_file], 1=*.vcf, 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output]
 	
 	##INITIALIZE
 	
-	runmode=0
-	types = get_types(runmode)
+	runmode=0 #mode in which the program will be operated
+	types = get_types(runmode) #the names of the different types of editing
 	#runmode = input()
 	init(types, runmode) #test mode init(0)
 	#init(1) # User input mode
 	#init(2, "INPATH")# Read in from file mode
 	##USER LOADS FILES
 	loaded = ""
-	#add ability to read loaded from input
+	#ADD: ability to read loaded from input
 	while(loaded!="c"):
+		print(types)
 		loaded=raw_input("Load Input files into their appropriate folders. Enter \'c\' to Continue, or \'e\' to Exit the program.").strip().lower()
 		if loaded=="e":
 			break
 	if loaded =="e":
 		sys.exit() #exit before data intensive steps
-	##GENERATE FILE LIST
+	##Add all to file list
+	standardize()#add correct inputs
 	
 	#VCF Filter
 	for vcf_file in filelist: #TODO make functional, store in intermediates
@@ -109,8 +111,11 @@ def init(types, runmode=1, in_path="",):
 		return
 	
 	
-	for i in range(0,numtypes): #make sure this works, flexibly
-		dirname = "./inputs/type{}_{}"format(str(i),types[i])
+	for i in range(0,numtypes+1): #make sure this works, flexibly
+		if i==numtypes+1:
+			dirname ="./inputs/other"
+		else:
+			dirname = "./inputs/type{}_{}"format(str(i),types[i])
 		os.mkdir(dirname)
 	
 def get_types(runmode):
@@ -125,7 +130,27 @@ def get_types(runmode):
 	elif runmode == 2: #read from file
 		#read types from file
 	return types
-	
+
+def standardize(filelist, types, dir_path, cwd):
+	directories = os.listdir(dir_path+"/inputs")
+	for directory in directories:
+		if directory != (dir_path+/"inputs/other":
+			standardize_NVCs(filelist, types, dir_path, cwd, directory)
+
+def standardize_NVCs(filelist, types, dir_path, cwd, directory):
+	for filename in os.listdir(directory):
+		oldname = filename #Format: Galaxy34-[Naive_Variant_Caller_(NVC)_on_data_19_and_data_26].vcf
+		type_info = directory.split("/")[-1].strip()
+		gal_num = filename.split("-")[0].split("y")[1].strip() #isolate the number
+		fasta_step = filename.split("_")[6].strip()
+		bam_step = filename.split("_")[9].strip()
+		newname = "./NVC_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format: NVC_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
+		os.rename(filename, newname)
+		filelist[1].append(newname)#make sure the path gets in here
+		
+
+def standardize_NVC
+
 def vcf_filter1(vcf, filter_vcf):
     try:
         new_file = open(filter_vcf, 'x')
