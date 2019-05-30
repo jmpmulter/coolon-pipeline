@@ -10,41 +10,122 @@ import os
 #from scipy.stats import ttest_ind 
 
 ## init gets user input for paramaters of the program.
-##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file
-def init(mode = 1, in_path="",):
+##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file. File structure may already be established, and maybe reading names from text fie
+
+if __name__ == "__main__": #sets up a main area. This will not work well if imported
+	
+	filelist = [[],[],[],[],[],[]] #filelist is a list of all inputted and logged files.
+	dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
+	os.chdir(dir_path) #move the cwd to the dir_path
+	cwd = os.getcwd() #This will be useful for doing things within the current directory
+	#0=[.gff3,filt.gff3], 1=*.vcf, 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output]
+	
+	##INITIALIZE
+	
+	runmode=0
+	types = get_types(runmode)
+	#runmode = input()
+	init(types, runmode) #test mode init(0)
+	#init(1) # User input mode
+	#init(2, "INPATH")# Read in from file mode
+	##USER LOADS FILES
+	loaded = ""
+	#add ability to read loaded from input
+	while(loaded!="c"):
+		loaded=raw_input("Load Input files into their appropriate folders. Enter \'c\' to Continue, or \'e\' to Exit the program.").strip().lower()
+		if loaded=="e":
+			break
+	if loaded =="e":
+		sys.exit() #exit before data intensive steps
+	##GENERATE FILE LIST
+	
+	#VCF Filter
+	for vcf_file in filelist: #TODO make functional, store in intermediates
+		vcf_filter1(vcf_file)
+	#GFF3 Filter
+	gff3_filter(.gff3 ) #TODO make functional, store in intermediates
+	#Findgene
+	for filt_NVC in filelist:
+		findgene(filt_NVC, filt_gff3, outpath)
+	#COMPGENE
+	for i in range(0,len(filelist[3])-1)
+		#if nothing in compgene outputs, intersect first 2 findgene outputs
+		#else:
+			#intersect filelist[4][-1] with filelist[3][i+1]
+			#append this intersected file to filelist[4]
+	#MakePXL
+	make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
+	#MakeCSV
+	make_csv(filelist[5][0]) #store in outputs and filelist[5][1]
+
+def init(types, runmode=1, in_path="",):
 	os.mkdir(./inputs) #for raw input files
 	#note: when testing, make sure that the current path is still . and is NOT ./inputs
 	#if necessary, reset cursor
 	os.mkdir(./intermeds) #files produced internally (filtered versions, etc) that end user is not expected to see
 	os.mkdir(./outputs) #files that the end user would want to see (comparison files, pxl, excel)
-	
-	numtypes=0
-	typenames ={}
-	ed_type = ""
-	if mode==0:
-	#hardcoded info
+	numtypes=0 #number of types of files to be compared. For example, 2 types is control and experimental. 3 skips init entirely
+	#types_raw =[] #input variable #maybe extra, delete soon
+	typenames =[] #List of touples patterned (typenumber, verbal name) #return
+	#ed_type = ""
+	#already_init = False
+	#If/elif conditions to get the info. create stuff after the info is recorded.
+	#if (False): """INPUT FOLDER ALREADY EXISTS. This conditional must be edited"""
+	#	already_init = True
+	#make flexible for if init performed or not already
+	if runmode == 3: #escape
+		return()
+	elif runmode==0:
+	#hardcoded test info
+		print("Standard CL/OA test mode selected. 2 types")
 		numtypes=2
-		typenames={"type1":CL,"type2":OA}
+		"""typenames=[("type1","CL"),("type2","OA")] 
 		ed_type = "AG"
+		already_init = False #Make this true if the file tree is already initialized in mode ==2"""
 		
-		
-	elif mode ==1:
+	elif runmode ==1:
 		#user input
-		print("INPUT INTSTRUCTIONS")
-		print("Number of types")
+		print("Manual Input Selected.")
+		numtypes=input("Number of types (integer, 2 is standard for control and experimental)")
+		"""raw_types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
+		for i in range(0,len(raw_types)):
+			typenames.append(("type{}"format(str(i)),raw_types[i]))
+		ed_type=raw_input("What type of editing to look for ? A/G or C/U? Enter A or C").strip()
+		#add an input checker to make sure this can take only a,A,c,C
+		if(ed_type.islower()): #checks if the edtype is lower case
+			ed_type=ed_type.upper()#changes it to upper case if necessary"""
 		
-	elif mode ==2:
+	elif runmode ==2: """TODO: MAKE EXECUTABLE FROM A FILE"""
+		print("Input from text file mode selected")
+		#from inpath
+		
 		# read input from a text file at in_path
+		#be ready for the file structure to already be initialized. If this is the case, just get the names and editing type and 
+			#already_init = True
+		
 	else:
 		#print error and exit		
-	for i in range(0,numtypes): #make sure this works, flexibly
-		dirname = "./inputs/numtypes/type{}"format(str(i))
-		os.mkdir(dirname) 
-	#store typenames globally
-	#store editing type globally
-		
+		print("Error in init. Exiting Init component.")
+		return
 	
-
+	
+	for i in range(0,numtypes): #make sure this works, flexibly
+		dirname = "./inputs/type{}_{}"format(str(i),types[i])
+		os.mkdir(dirname)
+	
+def get_types(runmode):
+	types = []
+	if runmode == 3:
+		runmode = input("input new mode (0 for standard test, 1 for manual entry, 2 for document entry")
+		
+	if runmode == 0: #test
+		types =["CL","OA"]
+	elif runmode == 1: #user input
+		types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
+	elif runmode == 2: #read from file
+		#read types from file
+	return types
+	
 def vcf_filter1(vcf, filter_vcf):
     try:
         new_file = open(filter_vcf, 'x')
