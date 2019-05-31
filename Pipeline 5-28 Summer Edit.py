@@ -1,6 +1,7 @@
 import sys
 import re
 import os
+import shutil
 #import pandas as pd
 #import numpy as np
 #from functools import reduce
@@ -14,7 +15,7 @@ import os
 
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
 	
-	filelist = [[],[],[],[],[],[]] #filelist is a list of all inputted and logged files.
+	filelist = [["","",""],[],[],[],[],[]] #filelist is a list of all inputted and logged files.
 	dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
 	os.chdir(dir_path) #move the cwd to the dir_path
 	cwd = os.getcwd() #This will be useful for doing things within the current directory
@@ -22,9 +23,8 @@ if __name__ == "__main__": #sets up a main area. This will not work well if impo
 	
 	##INITIALIZE
 	
-	runmode=0 #mode in which the program will be operated
+	runmode=0 #mode in which the program will be operated TODO MAKE THIS USER INPUT
 	types = get_types(runmode) #the names of the different types of editing
-	#runmode = input()
 	init(types, runmode) #test mode init(0)
 	#init(1) # User input mode
 	#init(2, "INPATH")# Read in from file mode
@@ -33,24 +33,22 @@ if __name__ == "__main__": #sets up a main area. This will not work well if impo
 	#ADD: ability to read loaded from input
 	while(loaded!="c"):
 		print(types)
-		loaded=raw_input("Load Input files into their appropriate folders. Enter \'c\' to Continue, or \'e\' to Exit the program.").strip().lower()
+		loaded=input("Load Input files into their appropriate folders. Enter \'c\' to Continue, or \'e\' to Exit the program.").strip().lower()
 		if loaded=="e":
 			break
 	if loaded =="e":
 		sys.exit() #exit before data intensive steps
 	##Add all to file list
-	standardize()#add correct inputs
+	standardize(filelist, types, dir_path, cwd)#add correct inputs
 	
 	#VCF Filter
-	for vcf_file in filelist: #TODO make functional, store in intermediates
-		vcf_filter1(vcf_file)
+	run_vcf_filter(filelist, dir_path)
 	#GFF3 Filter
-	gff3_filter(.gff3 ) #TODO make functional, store in intermediates
+	run_gff3_filter(filelist, dir_path)
 	#Findgene
-	for filt_NVC in filelist:
-		findgene(filt_NVC, filt_gff3, outpath)
+	run_findgene(filelist, dir_path)
 	#COMPGENE
-	for i in range(0,len(filelist[3])-1)
+	run_compgene(filelist, dir_path)
 		#if nothing in compgene outputs, intersect first 2 findgene outputs
 		#else:
 			#intersect filelist[4][-1] with filelist[3][i+1]
@@ -61,11 +59,11 @@ if __name__ == "__main__": #sets up a main area. This will not work well if impo
 	make_csv(filelist[5][0]) #store in outputs and filelist[5][1]
 
 def init(types, runmode=1, in_path="",):
-	os.mkdir(./inputs) #for raw input files
+	os.mkdir("inputs") #for raw input files
 	#note: when testing, make sure that the current path is still . and is NOT ./inputs
 	#if necessary, reset cursor
-	os.mkdir(./intermeds) #files produced internally (filtered versions, etc) that end user is not expected to see
-	os.mkdir(./outputs) #files that the end user would want to see (comparison files, pxl, excel)
+	os.mkdir("intermeds") #files produced internally (filtered versions, etc) that end user is not expected to see
+	os.mkdir("outputs") #files that the end user would want to see (comparison files, pxl, excel)
 	numtypes=0 #number of types of files to be compared. For example, 2 types is control and experimental. 3 skips init entirely
 	#types_raw =[] #input variable #maybe extra, delete soon
 	typenames =[] #List of touples patterned (typenumber, verbal name) #return
@@ -111,13 +109,10 @@ def init(types, runmode=1, in_path="",):
 		return
 	
 	
-	for i in range(0,numtypes+1): #make sure this works, flexibly
-		if i==numtypes+1:
-			dirname ="./inputs/other"
-		else:
-			dirname = "./inputs/type{}_{}"format(str(i),types[i])
+	for i in range(0,numtypes): #make sure this works, flexibly
+		dirname = "./inputs/type{}_{}"format(str(i),types[i])
 		os.mkdir(dirname)
-	
+	os.mkdir("./inputs/other")
 def get_types(runmode):
 	types = []
 	if runmode == 3:
@@ -129,28 +124,69 @@ def get_types(runmode):
 		types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
 	elif runmode == 2: #read from file
 		#read types from file
+		pass
 	return types
 
 def standardize(filelist, types, dir_path, cwd):
-	directories = os.listdir(dir_path+"/inputs")
-	for directory in directories:
-		if directory != (dir_path+/"inputs/other":
+	directories = os.listdir(dir_path+"./inputs")
+    for directory in directories:
+        if directory != ("other"):
 			standardize_NVCs(filelist, types, dir_path, cwd, directory)
-
-def standardize_NVCs(filelist, types, dir_path, cwd, directory):
-	for filename in os.listdir(directory):
-		oldname = filename #Format: Galaxy34-[Naive_Variant_Caller_(NVC)_on_data_19_and_data_26].vcf
-		type_info = directory.split("/")[-1].strip()
-		gal_num = filename.split("-")[0].split("y")[1].strip() #isolate the number
-		fasta_step = filename.split("_")[6].strip()
-		bam_step = filename.split("_")[9].strip()
-		newname = "./NVC_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format: NVC_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
-		os.rename(filename, newname)
-		filelist[1].append(newname)#make sure the path gets in here
+	other_contents = os.listdir(dir_path+"./inputs/other")
+	for item in other_contents:
+		if(".gff3" in item):
+			filename[0][0]="./inputs/other/"+item
+		elif("settings" in item):
+			print("settings document detected. Previously added to filelist")
+			continue
+		else:
+			print("Unrecognized input format. Excluded from filelist.")
 		
+	
+def standardize_NVCs(filelist, types, dir_path, cwd, directory):
+    for filename in os.listdir("./inputs/"+directory):
+        os.chdir(dir_path)
+        oldname = filename #Format: Galaxy34-[Naive_Variant_Caller_(NVC)_on_data_19_and_data_26].vcf
+        type_info = directory.split("/")[-1].strip()
+        gal_num = filename.split("-")[0].split("y")[1].strip() #isolate the number
+        fasta_step = filename.split("_")[6].strip()
+        bam_step = filename.split("_")[9].split("]")[0].strip()
+        newname = "NVC_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format: NVC_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
+        os.chdir("./inputs/"+directory)
+        os.rename(filename, newname)
+        filelist[1].append("./inputs/"+directory+"/"+newname)#make sure the path gets in here
+	os.chdir(dir_path)
+		
+def run_vcf_filter(filelist,dir_path): #Helper function to run several calls of VCF_filter1
+	for vcf_file in filelist[1]:
+        os.chdir(dir_path)
+        #print(vcf_file)
+        clean_name = vcf_file.split("/")[3].split(".")[0].strip()
+        outpath = "./intermeds/"+clean_name+"_FILT.txt"
+        vcf_filter1(vcf_file, outpath)
+		filelist[2].append(outpath)#make sure the path gets in here
+		
+def run_gff3_filter(filelist, dir_path):
+	os.chdir(dir_path)
+    clean_name = filelist[0][0].split("/")[3].split(".")[0].strip()
+    outpath = "./intermeds/"+clean_name+"_FILT_gff3.txt"
+    gff3_filter(filelist[0][0], outpath)
+	filelist[0][1] = outpath #make sure the path gets in here
 
-def standardize_NVC
+def run_findgene(filelist, dir path):
+	for filt_vcf in filelist[2]:
+    os.chdir(dir_path)
+    clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
+    outpath = "./intermeds/"+clean_name+"_GENES.txt"
+    findgene(filt_vcf, filelist[0][1],outpath)
+	filelist[3].append(outpath)#make sure the path gets in here
 
+def run_compgene(filelist, dir_path):
+	for i in range(0,len(filelist[3])):
+	if(i==0):
+		#compare First 2 files
+	else:
+		#compare filelist[4][-1] to filelist[3][i] #potentially to i+1? ##TODO PICKUP AND CONTINUE HERE
 def vcf_filter1(vcf, filter_vcf):
     try:
         new_file = open(filter_vcf, 'x')
@@ -159,7 +195,7 @@ def vcf_filter1(vcf, filter_vcf):
         
         for line in open_vcf:
             vcf_line = line.split('\t')
-            if "#" in line or vcf_line[0] == '/n' or vcf_line[3] != 'A' or vcf_line[4] != 'G':
+            if "#" in line or vcf_line[0] == '/n' or vcf_line[3] != 'A' or vcf_line[4] != 'G': #Changes here for C/U
                 continue
             #print(line)  
             n1 = vcf_line[9].split(':')[-1]
@@ -193,7 +229,7 @@ def vcf_filter1(vcf, filter_vcf):
 #vcf_filter1('HA2.vcf','HA2_filtered.txt')
 #vcf_filter1('HA3.vcf','HA3_filtered.txt')
 
-def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
+"""def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
 
     for line in open_vcf:
         vcf_line = line.split('\t')
@@ -237,6 +273,7 @@ def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf 
 
 except FileExistsError:
     print('the file ' + filter_vcf + ' already exists')
+	"""
 	
 
 #u = unfiltered, f = filtered
