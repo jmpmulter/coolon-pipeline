@@ -87,23 +87,23 @@ def init(types, runmode=1, in_path="",):
 	#hardcoded test info
 		print("Standard CL/OA test mode selected. 2 types")
 		numtypes=2
-		"""typenames=[("type1","CL"),("type2","OA")] 
-		ed_type = "AG"
-		already_init = False #Make this true if the file tree is already initialized in mode ==2"""
+		#typenames=[("type1","CL"),("type2","OA")] 
+		#ed_type = "AG"
+		#already_init = False #Make this true if the file tree is already initialized in mode ==2
 		
 	elif runmode ==1:
 		#user input
 		print("Manual Input Selected.")
 		numtypes=input("Number of types (integer, 2 is standard for control and experimental)")
-		"""raw_types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
-		for i in range(0,len(raw_types)):
-			typenames.append(("type{}"format(str(i)),raw_types[i]))
-		ed_type=raw_input("What type of editing to look for ? A/G or C/U? Enter A or C").strip()
-		#add an input checker to make sure this can take only a,A,c,C
-		if(ed_type.islower()): #checks if the edtype is lower case
-			ed_type=ed_type.upper()#changes it to upper case if necessary"""
+#		"""raw_types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
+#		for i in range(0,len(raw_types)):
+#			typenames.append(("type{}"format(str(i)),raw_types[i]))
+#		ed_type=raw_input("What type of editing to look for ? A/G or C/U? Enter A or C").strip()
+#		#add an input checker to make sure this can take only a,A,c,C
+#		if(ed_type.islower()): #checks if the edtype is lower case
+#			ed_type=ed_type.upper()#changes it to upper case if necessary
 		
-	elif runmode ==2: """TODO: MAKE EXECUTABLE FROM A FILE"""
+	elif runmode ==2: #TODO: MAKE EXECUTABLE FROM A FILE
 		print("Input from text file mode selected")
 		#from inpath
 		
@@ -118,7 +118,7 @@ def init(types, runmode=1, in_path="",):
 	
 	
 	for i in range(0,numtypes): #make sure this works, flexibly
-		dirname = "./inputs/type{}_{}"format(str(i),types[i])
+		dirname = "./inputs/type{}_{}".format(str(i),types[i])
 		os.mkdir(dirname)
 	os.mkdir("./inputs/other")
 def get_types(runmode):
@@ -195,7 +195,7 @@ def run_compgene(filelist, dir_path):
 		filelist[4][0] = outpath
 	else:
 		#compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
-		outpath = "./intermeds/COMP_{}.txt"format(str(i))
+		outpath = "./intermeds/COMP_{}.txt".format(str(i))
 		compgene(filelist[4][-1],filelist[3][i+1],outpath)#compare most recent comparison file with next file on filelist
 		filelist[4].append(outpath)
 		
@@ -232,9 +232,9 @@ def vcf_filter1(vcf, filter_vcf):
                     print("WRONG BASE SOMETHING WRONG AHHH")
             
             new_file.write(line + '\t' + ':A=' + str(numA) + ',' + 'G=' + str(numG) + ',' + '\n')
-			"""Sample Output into filtered file
-			scaffold_0	26626	.	A	G	.	.	AC=1;AF=0.00833333333333;SB=2.79069767442	GT:AC:AF:SB:NC	0/0:1:0.00833333333333:2.79069767442:+A=77,-A=42,-G=1,
-			:A=119,G=1,"""
+#			Sample Output into filtered file
+#			scaffold_0	26626	.	A	G	.	.	AC=1;AF=0.00833333333333;SB=2.79069767442	GT:AC:AF:SB:NC	0/0:1:0.00833333333333:2.79069767442:+A=77,-A=42,-G=1,
+#			:A=119,G=1,
             #print(line + '\t' + ':A=' + str(numA) + ',' + 'G=' + str(numG) + ',' + '\n')
                 
             #print(n2)
@@ -245,51 +245,51 @@ def vcf_filter1(vcf, filter_vcf):
 #vcf_filter1('C1.vcf','C1_filtered.txt')
 
 
-"""def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
-
-    for line in open_vcf:
-        vcf_line = line.split('\t')
-        if "#" in line:
-            continue
-        if vcf_line[0] == '\n':
-            continue
-        n1 = vcf_line[9].split(',')
-        n2 = n1[0].split(':')[3] + n1[1] #this has the form 'A=*G=*'
-        n3 = list(map(str, n2))
-        if n3[-1] == '\n': #gets rid of \n on the end
-            del n3[-1]
-        i=0
-        while(i < len(n3)):             
-            if n3[i] == '=':
-                del n3[i]
-                i = i - 1 
-            i = i + 1
-        #print(n3)
-        j = 1
-        numRef = ''
-        numAlt = ''
-        if n3[0] == 'A': #this grabs the number of ref
-            while(n3[j] != 'G'):
-                numRef = numRef + n3[j] 
-                j = j+1
-            #print('A=',numRef)
-        if n3[j] == 'G':
-            j = j + 1 
-            while(j < len(n3)): #this grabs the number of alt
-                numAlt = numAlt + n3[j]
-                j = j + 1
-            #print('G=', numAlt)
-
-        if numRef != '' and ((int(numRef) + int(numAlt)) > 10):
-            new_file.write(line)
-    open_vcf.seek(0)
-    new_file.close()
-    open_vcf.close()
-
-
-except FileExistsError:
-    print('the file ' + filter_vcf + ' already exists')
-	"""
+#def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
+#
+#    for line in open_vcf:
+#        vcf_line = line.split('\t')
+#        if "#" in line:
+#            continue
+#        if vcf_line[0] == '\n':
+#            continue
+#        n1 = vcf_line[9].split(',')
+#        n2 = n1[0].split(':')[3] + n1[1] #this has the form 'A=*G=*'
+#        n3 = list(map(str, n2))
+#        if n3[-1] == '\n': #gets rid of \n on the end
+#            del n3[-1]
+#        i=0
+#        while(i < len(n3)):             
+#            if n3[i] == '=':
+#                del n3[i]
+#                i = i - 1 
+#            i = i + 1
+#        #print(n3)
+#        j = 1
+#        numRef = ''
+#        numAlt = ''
+#        if n3[0] == 'A': #this grabs the number of ref
+#            while(n3[j] != 'G'):
+#                numRef = numRef + n3[j] 
+#                j = j+1
+#            #print('A=',numRef)
+#        if n3[j] == 'G':
+#            j = j + 1 
+#            while(j < len(n3)): #this grabs the number of alt
+#                numAlt = numAlt + n3[j]
+#                j = j + 1
+#            #print('G=', numAlt)
+#
+#        if numRef != '' and ((int(numRef) + int(numAlt)) > 10):
+#            new_file.write(line)
+#    open_vcf.seek(0)
+#    new_file.close()
+#    open_vcf.close()
+#
+#
+#except FileExistsError:
+#    print('the file ' + filter_vcf + ' already exists')
+#
 	
 
 #u = unfiltered, f = filtered
@@ -340,10 +340,10 @@ def gff3_filter(gff3, filter_gff3):
 
 #gff3_filter('dsechellia.gff3', 'filt_dsechellia.gff3')
 
-'''takes the result of vcf_filter and gff3_filter
-find_gene(vcf, gff3, file) takes a vcf file, a gff3 file and an out path (what you want your new file to be named) 
-and will return a new file with the scaffold, vcf position and the gene ID. (can add more things by adding to line 38). 
-must input the files into the function in this order or it will not work.'''
+#takes the result of vcf_filter and gff3_filter
+#find_gene(vcf, gff3, file) takes a vcf file, a gff3 file and an out path (what you want your new file to be named) 
+#and will return a new file with the scaffold, vcf position and the gene ID. (can add more things by adding to line 38). 
+#must input the files into the function in this order or it will not work.'''
 
 def find_gene(vcf, gff3, file):
 
@@ -407,8 +407,8 @@ def find_gene(vcf, gff3, file):
                 
 #find_gene('C1_filtered.txt','filt_dsechellia.gff3','C1_genes.txt')
 
-'''comp_genes(f0, f1, new_file) = new_file with the SNPs that are
-common to both f0 and f1'''
+#comp_genes(f0, f1, new_file) = new_file with the SNPs that are
+#common to both f0 and f1
 
 
 def comp_gene(f0, f1, file):
