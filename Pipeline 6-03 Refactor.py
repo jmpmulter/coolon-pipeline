@@ -67,6 +67,10 @@ def main():
     output_files_used(filelist, header, dir_path)
 
 def init(types, runmode=1, in_path="",):
+    if(runmode == 0): #condition to skip re-placing the files for test mode
+        skip_init = input("skip init? y/n")
+        if (skip_init=="y"):
+            return
     os.mkdir("inputs") #for raw input files
     #note: when testing, make sure that the current path is still . and is NOT ./inputs
     #if necessary, reset cursor
@@ -142,7 +146,7 @@ def standardize(filelist, types, dir_path, cwd):
     other_contents = os.listdir(dir_path+"./inputs/other")
     for item in other_contents:
         if(".gff3" in item):
-            filename[0][0]="./inputs/other/"+item
+            filelist[0][0]="./inputs/other/"+item
         elif("settings" in item):
             print("settings document detected. Previously added to filelist")
             continue
@@ -153,13 +157,19 @@ def standardize_NVCs(filelist, types, dir_path, cwd, directory):
     for filename in os.listdir("./inputs/"+directory):
         os.chdir(dir_path)
         oldname = filename #Format: Galaxy34-[Naive_Variant_Caller_(NVC)_on_data_19_and_data_26].vcf
+        #sys.stdout.write("\noldname\t"+oldname) #debug
         type_info = directory.split("/")[-1].strip()
-        gal_num = filename.split("-")[0].split("y")[1].strip() #isolate the number
-        fasta_step = filename.split("_")[6].strip()
-        bam_step = filename.split("_")[9].split("]")[0].strip()
+        
+        gal_num = oldname.split("-")[0].split("y")[1].strip() #isolate the number
+        fasta_step = oldname.split("_")[6].strip()
+        #sys.stdout.write("\noldname\t"+oldname) #debug
+        #sys.stdout.write("\n\nbam_step = oldname.split(_)[9]") #debug
+        #sys.stdout.write(str(oldname.split("_"))) #debug
+        
+        bam_step = oldname.split("_")[9].split(".")[0].strip()
         newname = "NVC_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format: NVC_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
         os.chdir("./inputs/"+directory)
-        os.rename(filename, newname)
+        os.rename(oldname, newname)
         filelist[1].append("./inputs/"+directory+"/"+newname)#make sure the path gets in here
     os.chdir(dir_path)
         
