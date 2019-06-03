@@ -464,12 +464,12 @@ def make_pxl(compOutput, genes, outpath):
         if len(l) != 2:
             continue
             
-        scafC = l[0]
-        posC = l[1]
+        scafC = l[0] #scaffold of comparison location
+        posC = l[1] #position of comparison location on scaffold
         #print('========POS C========')
         #print(posC)
         
-        new_file.write(scafC + '\t' + posC)
+        new_file.write(scafC + '\t' + posC) #Writes the scaffold and position to the PXL
         #print(scafC + '\t' + posC)
         
         for file in genes:
@@ -479,27 +479,27 @@ def make_pxl(compOutput, genes, outpath):
                 l0 = line0.split(' ')
                 #print(l0)
                 #print(l0)
-                scafG = l0[0]
-                posG = l0[1]
-                if posG == 'A':
-                    continue
+                scafG = l0[0] # For matching to scafC
+                posG = l0[1] #For matching to posC
+                if posG == 'A': #if it's not a full data line (format of gene has an enter in it beofre A and G counts)
+                    continue #Unless some weirdness occurs in processing, this condition should never trigger
                 #print('=========POS G=======')
                 #print(posG)
                 
             
                 
-                if int(posC) == int(posG):
+                if int(posC) == int(posG): #If the lines' posiitons do match:
                     #print('TRUE')
-                    if scafC == scafG:    
+                    if scafC == scafG:    #If the lines' scaffolds do match:
                         #find out how to get name of a file (f) 
-                        new_file.write('^' + '\t' + file + '\t' + next(f))
+                        new_file.write('^' + '\t' + file + '\t' + next(f)+'\t'+l0[-1]) #TODO MAKE SURE THIS CHANGE WORKS
                         #print('^' + '\t' + file + '\t' + next(f))
 						
 def make_csv(pxl, outpath)
 
     pxl = open(pxl, 'r')
     new_file = open(outpath, 'x')
-    new_file.write("Scaffold,Position,RunFileName,Ref,Alt\n")
+    new_file.write("Scaffold,Position,RunFileName,Ref,Alt,GeneInfo\n") #TODO ADD GENEINFO INTO HERE
     scaf=""
     pos=""
     for line in pxl:
@@ -514,6 +514,6 @@ def make_csv(pxl, outpath)
             splitcar = line.split("\t")
             splitspa = splitcar[2].split(" ")
             #print(splitspa)
-            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6])
+            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6]+spiltcar[3]) #TODO Confirm this works.
             #print(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6].strip())
 
