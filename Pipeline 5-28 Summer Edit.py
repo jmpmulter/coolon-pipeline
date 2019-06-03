@@ -15,14 +15,16 @@ import shutil
 
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
 	
+	header = ["0: .gff3 and Settings","1: *.vcf","2: *FILT_NVC","3: Findgene Output","4: compgene outputs","5: Final Outputs"]
 	filelist = [["","",""],[],[],[],[],[]] #filelist is a list of all inputted and logged files.
+	
 	dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
 	os.chdir(dir_path) #move the cwd to the dir_path
 	cwd = os.getcwd() #This will be useful for doing things within the current directory
-	#0=[.gff3,filt.gff3, init_file], 1=*.vcf, 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output]
+	#0=[.gff3,filt.gff3, setup_file], 1=*.vcf, 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output, filelist_output]
 	
 	##INITIALIZE
-	
+	#make sure settings file is searched for and added to filelist
 	runmode=0 #mode in which the program will be operated TODO MAKE THIS USER INPUT
 	types = get_types(runmode) #the names of the different types of editing
 	init(types, runmode) #test mode init(0)
@@ -49,14 +51,20 @@ if __name__ == "__main__": #sets up a main area. This will not work well if impo
 	run_findgene(filelist, dir_path)
 	#COMPGENE
 	run_compgene(filelist, dir_path)
-		#if nothing in compgene outputs, intersect first 2 findgene outputs
-		#else:
-			#intersect filelist[4][-1] with filelist[3][i+1]
-			#append this intersected file to filelist[4]
 	#MakePXL
-	make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
+	os.chdir(dir_path)
+	pxl_name = "./outputs/PXL.txt" #can modify for more flexibility later
+	make_pxl(filelist[4][-1], filelist[3], pxl_name)
+	filelist[5][0] = pxl_name
+	#make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
 	#MakeCSV
-	make_csv(filelist[5][0]) #store in outputs and filelist[5][1]
+	csv_name = "./outputs/CSV.txt" #can modify for more flexibility later
+	make_csv(filelist[5][0], csv_name) #store in outputs and filelist[5][1]
+	filelist[5][1] = csv_name
+	#Output filelist for confirmation that all files were correctly processed
+	filelist_name = "./outputs/filelist_output.txt"
+	filelist[5][2] = filelist_name
+	output_files_used(filelist, header, dir_path)
 
 def init(types, runmode=1, in_path="",):
 	os.mkdir("inputs") #for raw input files
@@ -117,7 +125,6 @@ def get_types(runmode):
 	types = []
 	if runmode == 3:
 		runmode = input("input new mode (0 for standard test, 1 for manual entry, 2 for document entry")
-		
 	if runmode == 0: #test
 		types =["CL","OA"]
 	elif runmode == 1: #user input
@@ -142,7 +149,6 @@ def standardize(filelist, types, dir_path, cwd):
 		else:
 			print("Unrecognized input format. Excluded from filelist.")
 		
-	
 def standardize_NVCs(filelist, types, dir_path, cwd, directory):
     for filename in os.listdir("./inputs/"+directory):
         os.chdir(dir_path)
@@ -182,11 +188,25 @@ def run_findgene(filelist, dir path):
 	filelist[3].append(outpath)#make sure the path gets in here
 
 def run_compgene(filelist, dir_path):
-	for i in range(0,len(filelist[3])):
+	for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list
 	if(i==0):
-		#compare First 2 files
+		outpath = "./intermeds/COMP_0.txt"
+		compgene(filelist[3][0],filelist[3][1],outpath)#compare First 2 files
+		filelist[4][0] = outpath
 	else:
-		#compare filelist[4][-1] to filelist[3][i] #potentially to i+1? ##TODO PICKUP AND CONTINUE HERE
+		#compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
+		outpath = "./intermeds/COMP_{}.txt"format(str(i))
+		compgene(filelist[4][-1],filelist[3][i+1],outpath)#compare most recent comparison file with next file on filelist
+		filelist[4].append(outpath)
+		
+def output_files_used(filelist, header, dir_path):
+	new_file = open(filelist[5][2], 'x')
+	for i in range(0,len(header)):
+		new_file.write(header[i]+": ")
+		for j in range(0,len(filelist[i])):
+			new_file.write(filelist[i][j]+"\t")
+		new_file.write("\n")
+	
 def vcf_filter1(vcf, filter_vcf):
     try:
         new_file = open(filter_vcf, 'x')
@@ -223,11 +243,7 @@ def vcf_filter1(vcf, filter_vcf):
         print(vcf + filter_vcf + ' already exists')
 
 #vcf_filter1('C1.vcf','C1_filtered.txt')
-#vcf_filter1('C2.vcf','C2_filtered.txt')
-#vcf_filter1('C3.vcf','C3_filtered.txt')
-#vcf_filter1('HA1.vcf','HA1_filtered.txt')
-#vcf_filter1('HA2.vcf','HA2_filtered.txt')
-#vcf_filter1('HA3.vcf','HA3_filtered.txt')
+
 
 """def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
 
@@ -277,17 +293,6 @@ except FileExistsError:
 	
 
 #u = unfiltered, f = filtered
-
-#vcf_filter('Galaxy124u.txt', 'Galaxt124f.txt')
-
-#vcf_filter('Galaxy125u.txt', 'Galaxy125f.txt')
-
-#vcf_filter('Galaxy126u.txt', 'Galaxy126f.txt')
-
-#vcf_filter('Galaxy127u.txt', 'Galaxy127f.txt')
-
-#vcf_filter('Galaxy128u.txt', 'Galaxy128f.txt')
-
 #vcf_filter('Galaxy129u.txt', 'Galaxy129f.txt')
 
 #counts num of a-to-g events 
@@ -308,11 +313,7 @@ def count(file):
 #count('data.vcf')
 
 #count('C1_filtered.txt')
-#count('C2_filtered.txt')
-#count('C3_filtered.txt')
-#count('HA1_filtered.txt')
-#count('HA2_filtered.txt')
-#count('HA3_filtered.txt')
+
 
 #filter out so only get genes IN GFF3
 def gff3_filter(gff3, filter_gff3):
@@ -405,11 +406,6 @@ def find_gene(vcf, gff3, file):
 
                 
 #find_gene('C1_filtered.txt','filt_dsechellia.gff3','C1_genes.txt')
-#find_gene('C2_filtered.txt','filt_dsechellia.gff3','C2_genes.txt')
-#find_gene('C3_filtered.txt','filt_dsechellia.gff3','C3_genes.txt')
-#find_gene('HA1_filtered.txt','filt_dsechellia.gff3','HA1_genes.txt') 
-#find_gene('HA2_filtered.txt','filt_dsechellia.gff3','HA2_genes.txt') 
-#find_gene('HA3_filtered.txt','filt_dsechellia.gff3','HA3_genes.txt') 
 
 '''comp_genes(f0, f1, new_file) = new_file with the SNPs that are
 common to both f0 and f1'''
@@ -460,7 +456,7 @@ def comp_gene(f0, f1, file):
 
 def make_pxl(compOutput, genes, outpath):
     compO = open(compOutput, 'r')
-    #new_file = open(outpath, 'x')
+    new_file = open(outpath, 'x')
     
     for line in compO:
         #print(line)
@@ -473,12 +469,12 @@ def make_pxl(compOutput, genes, outpath):
         #print('========POS C========')
         #print(posC)
         
-        #new_file.write(scafC + '\t' + posC)
+        new_file.write(scafC + '\t' + posC)
         #print(scafC + '\t' + posC)
         
         for file in genes:
             f = open(file, 'r')
-            print(f)
+            #print(f)
             for line0 in f:
                 l0 = line0.split(' ')
                 #print(l0)
@@ -496,14 +492,11 @@ def make_pxl(compOutput, genes, outpath):
                     #print('TRUE')
                     if scafC == scafG:    
                         #find out how to get name of a file (f) 
-                        #new_file.write('^' + '\t' + file + '\t' + next(f))
-                        print('^' + '\t' + file + '\t' + next(f))
-              
-                        
-genes = ['NVC_CL1_Galaxy29_genes.txt', 'NVC_CL2_Galaxy30_genes.txt', 'NVC_CL3_Galaxy31_genes.txt','NVC_OA1_Galaxy32_genes.txt','NVC_OA2_Galaxy33_genes.txt', 'NVC_OA3_Galaxy34_genes.txt']
-make_pxl('compFinal.txt', genes, 'pxl.txt')
+                        new_file.write('^' + '\t' + file + '\t' + next(f))
+                        #print('^' + '\t' + file + '\t' + next(f))
+						
+def make_csv(pxl, outpath)
 
-def makeCSV(pxl,outpath):
     pxl = open(pxl, 'r')
     new_file = open(outpath, 'x')
     new_file.write("Scaffold,Position,RunFileName,Ref,Alt\n")
@@ -523,6 +516,4 @@ def makeCSV(pxl,outpath):
             #print(splitspa)
             new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6])
             #print(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6].strip())
-         
-            
-makeCSV("pxl1.txt","csvOUT1.csv")
+
