@@ -205,8 +205,10 @@ def run_findgene(filelist, dir_path):
         os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_GENES.txt"
+        sys.stdout.write("\n RUNNING find_gene of "+outpath)
         find_gene(filt_vcf, filelist[0][1],outpath)
         filelist[3].append(outpath)#make sure the path gets in here
+        sys.stdout.write("\n COMPLETED find_gene of "+outpath)
 
 def run_compgene(filelist, dir_path):
     for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list
