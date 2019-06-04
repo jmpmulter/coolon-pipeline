@@ -157,7 +157,7 @@ def standardize(filelist, types, dir_path, cwd):
     other_contents = os.listdir(dir_path+"/inputs/other") #TODO Confirm the ./ not needed.
     for item in other_contents:
         if(".gff3" in item):
-            filelist[0][0]="/inputs/other/"+item #TODO Confirm the ./ not needed.
+            filelist[0][0]="./inputs/other/"+item #TODO Confirm the ./ IS needed.
         elif("settings" in item):
             print("settings document detected. Previously added to filelist")
             continue
@@ -205,7 +205,7 @@ def run_findgene(filelist, dir_path):
         os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_GENES.txt"
-        findgene(filt_vcf, filelist[0][1],outpath)
+        find_gene(filt_vcf, filelist[0][1],outpath)
         filelist[3].append(outpath)#make sure the path gets in here
 
 def run_compgene(filelist, dir_path):
