@@ -41,17 +41,27 @@ def main():
     if loaded =="e":
         sys.exit() #exit before data intensive steps
     ##Add all to file list
+    sys.stdout.write("\n Running   Standardize")
     standardize(filelist, types, dir_path, cwd)#add correct inputs
-    
+    sys.stdout.write("\n Completed Standardize")
     #VCF Filter
+    sys.stdout.write("\n Running   VCF_Filter")
     run_vcf_filter(filelist, dir_path)
+    sys.stdout.write("\n Completed VCF_Filter")
     #GFF3 Filter
+    sys.stdout.write("\n Running   GFF3_Filter")
     run_gff3_filter(filelist, dir_path)
+    sys.stdout.write("\n Completed GFF3_Filter")
     #Findgene
+    sys.stdout.write("\n Running   FINDGENE")
     run_findgene(filelist, dir_path)
+    sys.stdout.write("\n Completed FINDGENE")
     #COMPGENE
+    sys.stdout.write("\n Running   COMPGENE")
     run_compgene(filelist, dir_path)
+    sys.stdout.write("\n Completed COMPGENE")
     #MakePXL
+    sys.stdout.write("\n Running MakePXL")
     os.chdir(dir_path)
     pxl_name = "./outputs/PXL.txt" #can modify for more flexibility later
     make_pxl(filelist[4][-1], filelist[3], pxl_name)
@@ -65,6 +75,7 @@ def main():
     filelist_name = "./outputs/filelist_output.txt"
     filelist[5][2] = filelist_name
     output_files_used(filelist, header, dir_path)
+    sys.stdout.write("\n Execution Completed, Ending Program")
 
 def init(types, runmode=1, in_path="",):
     if(runmode == 0): #condition to skip re-placing the files for test mode
@@ -139,14 +150,14 @@ def get_types(runmode):
     return types
 
 def standardize(filelist, types, dir_path, cwd):
-    directories = os.listdir(dir_path+"./inputs")
+    directories = os.listdir(dir_path+"/inputs") #TODO Confirm the ./ not needed.
     for directory in directories:
         if directory != ("other"):
             standardize_NVCs(filelist, types, dir_path, cwd, directory)
-    other_contents = os.listdir(dir_path+"./inputs/other")
+    other_contents = os.listdir(dir_path+"/inputs/other") #TODO Confirm the ./ not needed.
     for item in other_contents:
         if(".gff3" in item):
-            filelist[0][0]="./inputs/other/"+item
+            filelist[0][0]="/inputs/other/"+item #TODO Confirm the ./ not needed.
         elif("settings" in item):
             print("settings document detected. Previously added to filelist")
             continue
@@ -154,7 +165,7 @@ def standardize(filelist, types, dir_path, cwd):
             print("Unrecognized input format. Excluded from filelist.")
         
 def standardize_NVCs(filelist, types, dir_path, cwd, directory):
-    for filename in os.listdir("./inputs/"+directory):
+    for filename in os.listdir("./inputs/"+directory): #TODO Confirm the ./ not needed.
         os.chdir(dir_path)
         oldname = filename #Format: Galaxy34-[Naive_Variant_Caller_(NVC)_on_data_19_and_data_26].vcf
         #sys.stdout.write("\noldname\t"+oldname) #debug
