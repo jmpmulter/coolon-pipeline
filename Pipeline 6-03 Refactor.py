@@ -51,8 +51,9 @@ def main():
     
     ##Add all to file list
     sys.stdout.write("\n Running   Standardize")
-    standardize(filelist, types, dir_path, cwd)#add correct inputs
+    standardize(filelist, types, dir_path, cwd, ed_type)#add correct inputs
     sys.stdout.write("\n Completed Standardize")
+    
     #VCF Filter
     sys.stdout.write("\n Running   VCF_Filter")
     run_vcf_filter(filelist, dir_path)
@@ -251,7 +252,7 @@ def get_types(runmode):
         pass
     return types
 
-def standardize(filelist, types, dir_path, cwd):
+def standardize(filelist, types, dir_path, cwd, ed_type):
     directories = os.listdir(dir_path+"/inputs") 
     for directory in directories:
         if directory != ("other"):
@@ -266,7 +267,7 @@ def standardize(filelist, types, dir_path, cwd):
         else:
             print("Unrecognized input format. Excluded from filelist:\t"+ item)
         
-def standardize_NVCs(filelist, types, dir_path, cwd, directory):
+def standardize_NVCs(filelist, types, dir_path, cwd, directory, ed_type):
     for filename in os.listdir("./inputs/"+directory): #TODO Confirm the ./ not needed.
         os.chdir(dir_path)
         oldname = filename #Format: Galaxy34-[Naive_Variant_Caller_(NVC)_on_data_19_and_data_26].vcf
@@ -280,7 +281,7 @@ def standardize_NVCs(filelist, types, dir_path, cwd, directory):
         #sys.stdout.write(str(oldname.split("_"))) #debug
         
         bam_step = oldname.split("_")[9].split(".")[0].strip()
-        newname = "NVC_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format: NVC_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
+        newname = "NVC_"+ed_type+"_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format (v2): NVC_EDTYPE_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
         os.chdir("./inputs/"+directory)
         os.rename(oldname, newname)
         filelist[1].append("./inputs/"+directory+"/"+newname)#make sure the path gets in here
@@ -369,56 +370,6 @@ def vcf_filter1(vcf, filter_vcf):
 
 #vcf_filter1('C1.vcf','C1_filtered.txt')
 
-
-#def vcf_filter(vcf, filter_vcf): try: new_file = open(filter_vcf, 'x') open_vcf = open(vcf, 'r') open_vcf.seek(0):
-#
-#    for line in open_vcf:
-#        vcf_line = line.split('\t')
-#        if "#" in line:
-#            continue
-#        if vcf_line[0] == '\n':
-#            continue
-#        n1 = vcf_line[9].split(',')
-#        n2 = n1[0].split(':')[3] + n1[1] #this has the form 'A=*G=*'
-#        n3 = list(map(str, n2))
-#        if n3[-1] == '\n': #gets rid of \n on the end
-#            del n3[-1]
-#        i=0
-#        while(i < len(n3)):             
-#            if n3[i] == '=':
-#                del n3[i]
-#                i = i - 1 
-#            i = i + 1
-#        #print(n3)
-#        j = 1
-#        numRef = ''
-#        numAlt = ''
-#        if n3[0] == 'A': #this grabs the number of ref
-#            while(n3[j] != 'G'):
-#                numRef = numRef + n3[j] 
-#                j = j+1
-#            #print('A=',numRef)
-#        if n3[j] == 'G':
-#            j = j + 1 
-#            while(j < len(n3)): #this grabs the number of alt
-#                numAlt = numAlt + n3[j]
-#                j = j + 1
-#            #print('G=', numAlt)
-#
-#        if numRef != '' and ((int(numRef) + int(numAlt)) > 10):
-#            new_file.write(line)
-#    open_vcf.seek(0)
-#    new_file.close()
-#    open_vcf.close()
-#
-#
-#except FileExistsError:
-#    print('the file ' + filter_vcf + ' already exists')
-#
-    
-
-#u = unfiltered, f = filtered
-#vcf_filter('Galaxy129u.txt', 'Galaxy129f.txt')
 
 #counts num of a-to-g events 
 def count(file):
