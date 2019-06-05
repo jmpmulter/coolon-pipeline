@@ -18,7 +18,7 @@ def main():
 ##TODO CALL PRE_CHECK AT THE APPROPRIATE LOCATION
     
     header = ["0: .gff3 and Settings","1: *.vcf","2: *FILT_NVC","3: Findgene Output","4: compgene outputs","5: Final Outputs"]
-    filelist = [["","",""],[],[],[],[],[]] #filelist is a list of all inputted and logged files.
+    filelist = [["","",""],[],[],[],[""],[]] #filelist is a list of all inputted and logged files.
     
     dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
     os.chdir(dir_path) #move the cwd to the dir_path
@@ -79,12 +79,12 @@ def main():
     #make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
     #MakeCSV
     csv_name = "./outputs/CSV.txt" #can modify for more flexibility later
-    make_csv(filelist[5][0], csv_name) #store in outputs and filelist[5][1]
+    make_csv(filelist[5][0], csv_name, ed_type) #store in outputs and filelist[5][1]
     filelist[5][1] = csv_name
     #Output filelist for confirmation that all files were correctly processed
     filelist_name = "./outputs/filelist_output.txt"
     filelist[5][2] = filelist_name
-    output_files_used(filelist, header, dir_path)
+    output_files_used(filelist, header, dir_path, ed_type)
     sys.stdout.write("\n Execution Completed, Ending Program")
     sys.exit()#Ends the program
 
@@ -143,18 +143,18 @@ def pre_check(dir_path, cwd):
     #get list of directories beginning with t
     dirs = os.listdir(dir_path+"/inputs")
 
-    for dir in dirs:
-        if dir[0]=="o":
+    for dire in dirs:
+        if dire[0]=="o":
             continue
-        elif(dir[0]=="t"):
-            files = os.listdir(dir_path+"/inputs/"+dir)
+        elif(dire[0]=="t"):
+            files = os.listdir(dir_path+"/inputs/"+dire)
             for file in files:
                 if "Galstep" in file:
-                    sys.stdout.write("Error: File Names already standardized at: "+dir_path+"/inputs/"+dir+"/"+file)
+                    sys.stdout.write("Error: File Names already standardized at: "+dir_path+"/inputs/"+dire+"/"+file)
                     sys.stdout.write("Input issue -- FAIL")
                     return 2
         else:
-            sys.stdout.write("unexpected directory detected. potential issue at: "+dir_path+"/inputs/"+dir)
+            sys.stdout.write("unexpected directory detected. potential issue at: "+dir_path+"/inputs/"+dire)
             sys.stdout.write("Input issue -- FAIL")
             return 2
     #check each file for "Galstep." If Match: return 2, print input fail
@@ -246,7 +246,7 @@ def get_types(runmode):
     if runmode == 0: #test
         types =["CL","OA"]
     elif runmode == 1: #user input
-        types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
+        types=input("In Order, what are the names of these types (separated by commas)").split(",").strip()
     elif runmode == 2: #read from file
         #read types from file
         pass
@@ -317,8 +317,8 @@ def run_compgene(filelist, dir_path,ed_type):
     for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
-            comp_gene(filelist[3][0],filelist[3][1],outpath)#compare First 2 files
-            filelist[4][0] = outpath
+            comp_gene(filelist[3][0],filelist[3][1],outpath, ed_type)#compare First 2 files
+            filelist[4].append(outpath) #TODO FATAL bug here. Not sure why. maybe [4][0]
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
@@ -401,6 +401,7 @@ def vcf_filter1(vcf, filter_vcf, ed_type):
 
 #filter out so only get genes IN GFF3
 def gff3_filter(gff3, filter_gff3, ed_type):
+    """Filters a raw .gff3 file to get only genes, reducing file size by approximately 1/10"""
     try:
         new_file = open(filter_gff3, 'x')
         open_gff3 = open(gff3, 'r')
@@ -427,9 +428,17 @@ def gff3_filter(gff3, filter_gff3, ed_type):
 #takes the result of vcf_filter and gff3_filter
 #find_gene(vcf, gff3, file) takes a vcf file, a gff3 file and an out path (what you want your new file to be named) 
 #and will return a new file with the scaffold, vcf position and the gene ID. (can add more things by adding to line 38). 
-#must input the files into the function in this order or it will not work.'''
+#must input the files into the function in this order or it will not work.
 
 def find_gene(vcf, gff3, file, ed_type):
+    ref = ""
+    alt = ""
+    if(ed_type =="a"):
+        ref = "A"
+        alt = "G"
+    elif(ed_type=="c"):
+        ref = "C"
+        alt = "T"
     try:
         new_file= open(file, 'x')
         open_vcf = open(vcf, 'r')
@@ -452,15 +461,16 @@ def find_gene(vcf, gff3, file, ed_type):
                 continue
             #print(len(num0))
             #print(len(num1))
-            refA = int(num0[1])
-            altG = int(num1[1])
-            if refA == 0: #if no ref obs then throw out
+            refct = int(num0[1])
+            altct = int(num1[1])
+            if refct == 0: #if no ref obs then throw out
                 continue
-            if refA + altG < 10: #if num ref + num alt is < 10 throw out 
+            if refct + altct < 10: #if num ref + num alt is < 10 throw out 
                 continue
             vcf_scaffold = vcf_line[0]
             vcf_pos = vcf_line[1]
             for line1 in open_gff3:
+                #TODO Possibly speed up this step by using a regex search (maybe using grep?)
                 gff3_line = line1.split('\t')
                 #print(gff3_line)
                 gff3_scaffold = gff3_line[0]
@@ -472,9 +482,9 @@ def find_gene(vcf, gff3, file, ed_type):
                     id_check = gff3_id.split(':')
                     if id_check[0] != 'ID=gene':
                         continue
-                    if int(vcf_pos) >= int(gff3_initial) and int(vcf_pos) <= int(gff3_final):
+                    if int(vcf_pos) >= int(gff3_initial) and int(vcf_pos) <= int(gff3_final): #If it's within the gene
                         #print(gff3_line)
-                        new_file.write(vcf_scaffold + ' ' + vcf_pos + ' ' + gff3_id + ' ' +'A = ' + num0[1] + ' G = ' + num1[1] + '\n')
+                        new_file.write(vcf_scaffold + ' ' + vcf_pos + ' ' + gff3_id + ' '+ref+' = ' + num0[1] + ' '+alt+' = ' + num1[1] + '\n')
             open_gff3.seek(0) #stackoverflow told me to do this and it worked.. resets the cursor 
                               #to the first for loop.. 
                 
@@ -493,6 +503,14 @@ def find_gene(vcf, gff3, file, ed_type):
 
 
 def comp_gene(f0, f1, file, ed_type):
+    ref = ""
+    alt = ""
+    if(ed_type =="a"):
+        ref = "A"
+        alt = "G"
+    elif(ed_type=="c"):
+        ref = "C"
+        alt = "T"
     new_file = open(file, 'x')
     open_f0 = open(f0, 'r')
     open_f1 = open(f1, 'r')
@@ -503,7 +521,7 @@ def comp_gene(f0, f1, file, ed_type):
         l0 = line0.split(' ')
         #print(l0)
         scaffold0 = l0[0]
-        if scaffold0 == '' or scaffold0 == 'A' or scaffold0 == '\n':
+        if scaffold0 == '' or scaffold0 == ref or scaffold0 == '\n':
             continue
         pos0 = l0[1]
         #print(pos0)
@@ -513,7 +531,7 @@ def comp_gene(f0, f1, file, ed_type):
             #print(l1)
             #print(l1[0] + ' ' + l1[1])
             scaffold1 = l1[0]
-            if scaffold1 == '' or scaffold1 == 'A' or scaffold1 == '\n':
+            if scaffold1 == '' or scaffold1 == ref or scaffold1 == '\n':
                 continue
             pos1 = l1[1]
             #print(scaffold1 + 'ONE') 
@@ -537,7 +555,15 @@ def comp_gene(f0, f1, file, ed_type):
 def make_pxl(compOutput, genes, outpath, ed_type):
     compO = open(compOutput, 'r')
     new_file = open(outpath, 'x')
-    
+    ref = ""
+    alt = ""
+    if(ed_type =="a"):
+        ref = "A"
+        alt = "G"
+    elif(ed_type=="c"):
+        ref = "C"
+        alt = "T"
+        
     for line in compO:
         #print(line)
         l = line.split(' ')
@@ -575,11 +601,19 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                         new_file.write('^' + '\t' + file + '\t' + next(f)+'\t'+l0[-1]) #TODO MAKE SURE THIS CHANGE WORKS
                         #print('^' + '\t' + file + '\t' + next(f))
                         
-def make_csv(pxl, outpath):
-
+def make_csv(pxl, outpath, ed_type):
+    ref = ""
+    alt = ""
+    if(ed_type =="a"):
+        ref = "A"
+        alt = "G"
+    elif(ed_type=="c"):
+        ref = "C"
+        alt = "T"
+        
     pxl = open(pxl, 'r')
     new_file = open(outpath, 'x')
-    new_file.write("Scaffold,Position,RunFileName,Ref,Alt,GeneInfo\n") #TODO ADD GENEINFO INTO HERE
+    new_file.write("Scaffold,Position,RunFileName,Ref("+ref+"),Alt("+alt+"),GeneInfo\n") #TODO ADD GENEINFO INTO HERE
     scaf=""
     pos=""
     for line in pxl:
