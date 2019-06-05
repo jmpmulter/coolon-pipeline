@@ -45,19 +45,8 @@ def main():
         sys.exit() #exit before data intensive steps
     #RUN pre_check()
     sys.stdout.write("\n Running    pre_check")
-    pre_check_meanings = {1:"pre_check passed",2:"pre_check failed in inputs",3:"pre_check failed in intermeds",4:"pre_check failed in outputs"}
     
-    pre_check_val = pre_check(dir_path, cwd)
-    
-    if pre_check_val!=1:
-        sys.stdout.write("\n"+pre_check_meanings[pre_check_val])
-        quit_in_pre = input("pre_check detected errors. Proceed anyway? y to continue, n to quit program. y/n ").lower().strip()
-        if(quit_in_pre=="n"):
-            sys.stdout.write("Exiting. Goodbye")
-            sys.exit()
-        
-    else:
-        sys.stdout.write("\n"+pre_check_meanings[pre_check_val])   
+    run_pre_check(dir_path, cwd)
     sys.stdout.write("\n Completed  pre_check")
     
     ##Add all to file list
@@ -112,6 +101,36 @@ def get_ed_type(runmode):
         sys.stdout.write("\n ERROR in get_ed_type. runmode-based error. Exiting program")
         sys.exit()
 
+def clear_pipe(dir_path, cwd):
+    folder = dir_path+"/intermeds"
+    for the_file in os.listdir(folder):
+        file_path = os.path.join(folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+            #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
+
+def run_pre_check(dir_path, cwd):
+    pre_check_meanings = {1:"pre_check passed",2:"pre_check failed in inputs",3:"pre_check failed in intermeds",4:"pre_check failed in outputs"}
+    pre_check_val = pre_check(dir_path, cwd)
+    if pre_check_val!=1:
+        sys.stdout.write("\n"+pre_check_meanings[pre_check_val])
+        quit_in_pre = input("pre_check detected errors. Proceed anyway? c to continue, r to clear intermeds and outputs, n to quit program. c/r/n ").lower().strip()
+        if(quit_in_pre=="n"):
+            sys.stdout.write("Exiting. Goodbye")
+            sys.exit()
+        elif(quit_in_pre=="r"):
+            clear_pipe(dir_path, cwd)
+            run_pre_check(dir_path, cwd) #Recursively runs the pre_check to try to fix errors. quits when no error detected OR when y is input
+        elif(quit_in_pre =="c"):
+            sys.stdout.write("\n pre_check process bypassed (with command c)")
+            return
+    else:
+        sys.stdout.write("\n"+pre_check_meanings[pre_check_val])
+        return
+        
 def pre_check(dir_path, cwd):
     """Checks if files are correctly set up. Returns 1 if files correctly set up. returns 2 if error in inputs, 3 if error in intermeds, 4 if error in outputs.
     
@@ -122,6 +141,7 @@ def pre_check(dir_path, cwd):
     #check that inputs are not formatted to processed name format
     #get list of directories beginning with t
     dirs = os.listdir(dir_path+"/inputs")
+
     for dir in dirs:
         if dir[0]=="o":
             continue
