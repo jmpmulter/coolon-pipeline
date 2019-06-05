@@ -14,6 +14,8 @@ import shutil
 ##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file. File structure may already be established, and maybe reading names from text fie
 
 def main():
+
+##TODO CALL PRE_CHECK AT THE APPROPRIATE LOCATION
     
     header = ["0: .gff3 and Settings","1: *.vcf","2: *FILT_NVC","3: Findgene Output","4: compgene outputs","5: Final Outputs"]
     filelist = [["","",""],[],[],[],[],[]] #filelist is a list of all inputted and logged files.
@@ -40,6 +42,22 @@ def main():
             break
     if loaded =="e":
         sys.exit() #exit before data intensive steps
+    #RUN pre_check()
+    sys.stdout.write("\n Running    pre_check")
+    pre_check_meanings = {1:"pre_check passed",2:"pre_check failed in inputs",3:"pre_check failed in intermeds",4:"pre_check failed in outputs"}
+    pre_check_val = pre_check(dir_path, cwd)
+    
+    if pre_check_val!=1:
+        sys.stdout.write("\n"+pre_check_meanings[pre_check_val])
+        quit_in_pre = input("pre_check detected errors. Proceed anyway? y to continue, n to quit program. y/n ").lower().strip()
+        if(quit_in_pre=="n"):
+            sys.stdout.write("Exiting. Goodbye")
+            sys.exit()
+        
+    else:
+        sys.stdout.write("\n"+pre_check_meanings[pre_check_val])   
+    sys.stdout.write("\n Completed  pre_check")
+    
     ##Add all to file list
     sys.stdout.write("\n Running   Standardize")
     standardize(filelist, types, dir_path, cwd)#add correct inputs
@@ -76,6 +94,52 @@ def main():
     filelist[5][2] = filelist_name
     output_files_used(filelist, header, dir_path)
     sys.stdout.write("\n Execution Completed, Ending Program")
+
+#Pre_check: Returns 1 if files correctly set up. returns 2 if error in inputs, 3 if error in intermeds, 4 if error in outputs.
+#Pre_check processes inputs then intermeds then outputs, and returns on the first potential error detected.
+#An error in inputs may preclude detecting an issue in intermeds or outputs. intermeds error could preclude detecting in outputs
+def pre_check(types, dir_path, cwd):
+    sys.stdout.write("\n Performing Pre-Check of file setup")
+    sys.stdout.write("\n Checking "+dir_path+"/inputs")
+    #check that inputs are not formatted to processed name format
+    #get list of directories beginning with t
+    dirs = os.listdir(dir_path+"/inputs")
+    for dir in dirs:
+        if dir[0]=="o":
+            continue
+        elif(dir[0]=="t"):
+            files = os.listdir(dir_path+"/inputs/"+dir)
+            for file in files:
+                if "Galstep" in file:
+                    sys.stdout.write("Error: File Names already standardized at: "+dir_path+"/inputs/"+dir+"/"+file)
+                    sys.stdout.write("Input issue -- FAIL")
+                    return 2
+        else:
+            sys.stdout.write("unexpected directory detected. potential issue at: "+dir_path+"/inputs/"+dir)
+            sys.stdout.write("Input issue -- FAIL"
+            return 2
+    #check each file for "Galstep." If Match: return 2, print input fail
+    sys.stdout.write("\n inputs unformatted - PASS")
+        
+    
+    #check that intermediates empty
+    sys.stdout.write("\n Checking "+dir_path+"/intermeds")
+    if not os.listdir(dir_path+"/intermeds"):
+        print(dir_path+"/intermeds\t is empty - PASS")
+        pass
+    else:
+        print(dir_path+"/intermeds\t is NOT empty - FAIL") 
+        return 3
+    #check that outputs empty
+    sys.stdout.write("\n Checking "+dir_path+"/outputs")
+    if not os.listdir(dir_path+"/outputs"):
+        print(dir_path+"/outputs\t is empty - PASS")
+        pass
+    else:
+        print(dir_path+"/outputs\t is NOT empty - FAIL") 
+        return 4
+    return 1
+
 
 def init(types, runmode=1, in_path="",):
     if(runmode == 0): #condition to skip re-placing the files for test mode
