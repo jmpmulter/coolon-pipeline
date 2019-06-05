@@ -318,7 +318,7 @@ def run_compgene(filelist, dir_path,ed_type):
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
             comp_gene(filelist[3][0],filelist[3][1],outpath, ed_type)#compare First 2 files
-            filelist[4].append(outpath) #TODO FATAL bug here. Not sure why. maybe [4][0]
+            filelist[4].append(outpath) #TODO FATAL bug here. Not sure why. maybe [4][0]. Confirm .append() has fixed this.
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
