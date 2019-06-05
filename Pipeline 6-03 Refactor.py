@@ -240,7 +240,7 @@ def init(types, runmode=1, in_path="",):
     os.mkdir("./inputs/other")
 def get_types(runmode):
     types = []
-    if runmode == 3:
+    if runmode == 3: #Input of a new runmode
         runmode = input("input new mode (0 for standard test, 1 for manual entry, 2 for document entry")
     if runmode == 0: #test
         types =["CL","OA"]
@@ -252,19 +252,19 @@ def get_types(runmode):
     return types
 
 def standardize(filelist, types, dir_path, cwd):
-    directories = os.listdir(dir_path+"/inputs") #TODO Confirm the ./ not needed.
+    directories = os.listdir(dir_path+"/inputs") 
     for directory in directories:
         if directory != ("other"):
             standardize_NVCs(filelist, types, dir_path, cwd, directory)
-    other_contents = os.listdir(dir_path+"/inputs/other") #TODO Confirm the ./ not needed.
+    other_contents = os.listdir(dir_path+"/inputs/other")
     for item in other_contents:
         if(".gff3" in item):
-            filelist[0][0]="./inputs/other/"+item #TODO Confirm the ./ IS needed.
+            filelist[0][0]="./inputs/other/"+item 
         elif("settings" in item):
             print("settings document detected. Previously added to filelist")
-            continue
+            continue #TODO make this work from the settings document
         else:
-            print("Unrecognized input format. Excluded from filelist.")
+            print("Unrecognized input format. Excluded from filelist:\t"+ item)
         
 def standardize_NVCs(filelist, types, dir_path, cwd, directory):
     for filename in os.listdir("./inputs/"+directory): #TODO Confirm the ./ not needed.
