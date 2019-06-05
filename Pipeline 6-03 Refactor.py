@@ -56,25 +56,25 @@ def main():
     
     #VCF Filter
     sys.stdout.write("\n Running   VCF_Filter")
-    run_vcf_filter(filelist, dir_path)
+    run_vcf_filter(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed VCF_Filter")
     #GFF3 Filter
     sys.stdout.write("\n Running   GFF3_Filter")
-    run_gff3_filter(filelist, dir_path)
+    run_gff3_filter(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed GFF3_Filter")
     #Findgene
     sys.stdout.write("\n Running   FINDGENE")
-    run_findgene(filelist, dir_path)
+    run_findgene(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed FINDGENE")
     #COMPGENE
     sys.stdout.write("\n Running   COMPGENE")
-    run_compgene(filelist, dir_path)
+    run_compgene(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed COMPGENE")
     #MakePXL
     sys.stdout.write("\n Running MakePXL")
     os.chdir(dir_path)
-    pxl_name = "./outputs/PXL.txt" #can modify for more flexibility later
-    make_pxl(filelist[4][-1], filelist[3], pxl_name)
+    pxl_name = "./outputs/PXL.txt" #TODO MODIFY TO BE OF FORMAT: (a or c)_[types]_PXL.txt
+    make_pxl(filelist[4][-1], filelist[3], pxl_name, ed_type)
     filelist[5][0] = pxl_name
     #make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
     #MakeCSV
@@ -86,14 +86,14 @@ def main():
     filelist[5][2] = filelist_name
     output_files_used(filelist, header, dir_path)
     sys.stdout.write("\n Execution Completed, Ending Program")
+    sys.exit()#Ends the program
 
 
 def get_ed_type(runmode):
     ed_type = ""
     if (runmode == 0 | runmode == 1):
         while(ed_type!="a"& ed_type!="c"):
-            ed_type = input("Run for A-to-I or C-to-U editing? Enter a or c").lower().strip() #note: incorrect inputs will just trigger the loop to repeat.
-            
+            ed_type = input("Run for A-to-I or C-to-U editing? Enter a or c").lower().strip() #note: incorrect inputs will just trigger the loop to repeat.  
         return ed_type
     elif runmode ==2:
         #MAKE ABLE TO READ INPUT FROM A FILE
@@ -256,7 +256,7 @@ def standardize(filelist, types, dir_path, cwd, ed_type):
     directories = os.listdir(dir_path+"/inputs") 
     for directory in directories:
         if directory != ("other"):
-            standardize_NVCs(filelist, types, dir_path, cwd, directory)
+            standardize_NVCs(filelist, types, dir_path, cwd, directory, ed_type)
     other_contents = os.listdir(dir_path+"/inputs/other")
     for item in other_contents:
         if(".gff3" in item):
@@ -287,33 +287,33 @@ def standardize_NVCs(filelist, types, dir_path, cwd, directory, ed_type):
         filelist[1].append("./inputs/"+directory+"/"+newname)#make sure the path gets in here
     os.chdir(dir_path)
         
-def run_vcf_filter(filelist,dir_path): #Helper function to run several calls of VCF_filter1
+def run_vcf_filter(filelist,dir_path, ed_type): #Helper function to run several calls of VCF_filter1
     for vcf_file in filelist[1]:
         os.chdir(dir_path)
         #print(vcf_file)
         clean_name = vcf_file.split("/")[3].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_FILT.txt"
-        vcf_filter1(vcf_file, outpath)
-        filelist[2].append(outpath)#make sure the path gets in here
+        vcf_filter1(vcf_file, outpath, ed_type)
+        filelist[2].append(outpath)#make sure the path gets in here #would change this for parallel
         
-def run_gff3_filter(filelist, dir_path):
+def run_gff3_filter(filelist, dir_path, ed_type):
     os.chdir(dir_path)
     clean_name = filelist[0][0].split("/")[3].split(".")[0].strip()
     outpath = "./intermeds/"+clean_name+"_FILT_gff3.txt"
-    gff3_filter(filelist[0][0], outpath)
+    gff3_filter(filelist[0][0], outpath, ed_type)
     filelist[0][1] = outpath #make sure the path gets in here
 
-def run_findgene(filelist, dir_path):
+def run_findgene(filelist, dir_path, ed_type):
     for filt_vcf in filelist[2]:
         os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_GENES.txt"
         sys.stdout.write("\n RUNNING find_gene of "+outpath)
-        find_gene(filt_vcf, filelist[0][1],outpath)
+        find_gene(filt_vcf, filelist[0][1],outpath, ed_type)
         filelist[3].append(outpath)#make sure the path gets in here
         sys.stdout.write("\n COMPLETED find_gene of "+outpath)
 
-def run_compgene(filelist, dir_path):
+def run_compgene(filelist, dir_path,ed_type):
     for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
@@ -322,10 +322,10 @@ def run_compgene(filelist, dir_path):
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
-            comp_gene(filelist[4][-1],filelist[3][i+1],outpath)#compare most recent comparison file with next file on filelist
+            comp_gene(filelist[4][-1],filelist[3][i+1],outpath, ed_type)#compare most recent comparison file with next file on filelist
             filelist[4].append(outpath)
         
-def output_files_used(filelist, header, dir_path):
+def output_files_used(filelist, header, dir_path, ed_type):
     new_file = open(filelist[5][2], 'x')
     for i in range(0,len(header)):
         new_file.write(header[i]+": ")
@@ -333,7 +333,16 @@ def output_files_used(filelist, header, dir_path):
             new_file.write(filelist[i][j]+"\t")
         new_file.write("\n")
     
-def vcf_filter1(vcf, filter_vcf):
+def vcf_filter1(vcf, filter_vcf, ed_type):
+    ref = ""
+    alt = ""
+    if(ed_type =="a"):
+        ref = "A"
+        alt = "G"
+    elif(ed_type=="c"):
+        ref = "C"
+        alt = "T"
+    
     try:
         new_file = open(filter_vcf, 'x')
         open_vcf = open(vcf, 'r')
@@ -341,23 +350,23 @@ def vcf_filter1(vcf, filter_vcf):
         
         for line in open_vcf:
             vcf_line = line.split('\t')
-            if "#" in line or vcf_line[0] == '/n' or vcf_line[3] != 'A' or vcf_line[4] != 'G': #Changes here for C/U
+            if "#" in line or vcf_line[0] == '/n' or vcf_line[3] != ref or vcf_line[4] != alt: #TODO Changes here for C/U -- this should work
                 continue
             #print(line)  
             n1 = vcf_line[9].split(':')[-1]
             n2 = n1.split(',')[0:-1]
-            numA = 0
-            numG = 0
+            numref = 0
+            numalt = 0
             for x in n2:
                 num = int(x.split('=')[-1])
-                if 'A' in x:
-                    numA += num
-                elif 'G' in x:
-                    numG += num
+                if ref in x:
+                    numref += num
+                elif alt in x:
+                    numalt += num
                 else:
-                    print("WRONG BASE SOMETHING WRONG AHHH")
+                    sys.stdout.write("\nSomething was wrong with the input file in VCF_Filter")
             
-            new_file.write(line + '\t' + ':A=' + str(numA) + ',' + 'G=' + str(numG) + ',' + '\n')
+            new_file.write(line + '\t' + ':'+ref+'=' + str(numref) + ',' + ''+alt+'=' + str(numalt) + ',' + '\n')
 #           Sample Output into filtered file
 #           scaffold_0  26626   .   A   G   .   .   AC=1;AF=0.00833333333333;SB=2.79069767442   GT:AC:AF:SB:NC  0/0:1:0.00833333333333:2.79069767442:+A=77,-A=42,-G=1,
 #           :A=119,G=1,
@@ -372,26 +381,26 @@ def vcf_filter1(vcf, filter_vcf):
 
 
 #counts num of a-to-g events 
-def count(file):
-    count_a_to_g = 0
-    test = 0
-    with open(file, 'r') as open_file:  #'r' is opening the file in read mode
-        for line in open_file:          #loops through all lines in file
-            if "A\tG" in line:
-                if "AC=1" in line:      
-                    count_a_to_g = count_a_to_g
-                else: 
-                    count_a_to_g = count_a_to_g + 1  #change to +=1?
+# def count(file):
+    # count_a_to_g = 0
+    # test = 0
+    # with open(file, 'r') as open_file:  #'r' is opening the file in read mode
+        # for line in open_file:          #loops through all lines in file
+            # if "A\tG" in line:
+                # if "AC=1" in line:      
+                    # count_a_to_g = count_a_to_g
+                # else: 
+                    # count_a_to_g = count_a_to_g + 1  #change to +=1?
         
 
-    print ("Number of A-to-I Editing Sites is:", count_a_to_g)
-#count('data.vcf')
+    # print ("Number of A-to-I Editing Sites is:", count_a_to_g)
+# #count('data.vcf')
 
 #count('C1_filtered.txt')
 
 
 #filter out so only get genes IN GFF3
-def gff3_filter(gff3, filter_gff3):
+def gff3_filter(gff3, filter_gff3, ed_type):
     try:
         new_file = open(filter_gff3, 'x')
         open_gff3 = open(gff3, 'r')
@@ -420,7 +429,7 @@ def gff3_filter(gff3, filter_gff3):
 #and will return a new file with the scaffold, vcf position and the gene ID. (can add more things by adding to line 38). 
 #must input the files into the function in this order or it will not work.'''
 
-def find_gene(vcf, gff3, file):
+def find_gene(vcf, gff3, file, ed_type):
     try:
         new_file= open(file, 'x')
         open_vcf = open(vcf, 'r')
@@ -483,7 +492,7 @@ def find_gene(vcf, gff3, file):
 #common to both f0 and f1
 
 
-def comp_gene(f0, f1, file):
+def comp_gene(f0, f1, file, ed_type):
     new_file = open(file, 'x')
     open_f0 = open(f0, 'r')
     open_f1 = open(f1, 'r')
@@ -525,7 +534,7 @@ def comp_gene(f0, f1, file):
 #comp_gene('comp_HA1_2.txt', 'comp_HA1_3.txt', 'repHA_genes.txt')
 #comp_gene("comp_CL_1_2_3_All.txt","comp_OA_1_2_3_All.txt","compFinal.txt")
 
-def make_pxl(compOutput, genes, outpath):
+def make_pxl(compOutput, genes, outpath, ed_type):
     compO = open(compOutput, 'r')
     new_file = open(outpath, 'x')
     
