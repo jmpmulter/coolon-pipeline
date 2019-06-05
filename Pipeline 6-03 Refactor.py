@@ -214,12 +214,12 @@ def run_compgene(filelist, dir_path):
     for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
-            compgene(filelist[3][0],filelist[3][1],outpath)#compare First 2 files
+            comp_gene(filelist[3][0],filelist[3][1],outpath)#compare First 2 files
             filelist[4][0] = outpath
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
-            compgene(filelist[4][-1],filelist[3][i+1],outpath)#compare most recent comparison file with next file on filelist
+            comp_gene(filelist[4][-1],filelist[3][i+1],outpath)#compare most recent comparison file with next file on filelist
             filelist[4].append(outpath)
         
 def output_files_used(filelist, header, dir_path):
