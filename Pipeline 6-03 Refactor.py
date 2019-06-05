@@ -91,8 +91,8 @@ def main():
 
 def get_ed_type(runmode):
     ed_type = ""
-    if (runmode == 0 | runmode == 1):
-        while(ed_type!="a"& ed_type!="c"):
+    if (runmode == 0 or runmode == 1):
+        while(ed_type!="a" and ed_type!="c"):
             ed_type = input("Run for A-to-I or C-to-U editing? Enter a or c").lower().strip() #note: incorrect inputs will just trigger the loop to repeat.  
         return ed_type
     elif runmode ==2:
