@@ -45,6 +45,7 @@ def main():
     #RUN pre_check()
     sys.stdout.write("\n Running    pre_check")
     pre_check_meanings = {1:"pre_check passed",2:"pre_check failed in inputs",3:"pre_check failed in intermeds",4:"pre_check failed in outputs"}
+    
     pre_check_val = pre_check(dir_path, cwd)
     
     if pre_check_val!=1:
@@ -98,7 +99,7 @@ def main():
 #Pre_check: Returns 1 if files correctly set up. returns 2 if error in inputs, 3 if error in intermeds, 4 if error in outputs.
 #Pre_check processes inputs then intermeds then outputs, and returns on the first potential error detected.
 #An error in inputs may preclude detecting an issue in intermeds or outputs. intermeds error could preclude detecting in outputs
-def pre_check(types, dir_path, cwd):
+def pre_check(dir_path, cwd):
     sys.stdout.write("\n Performing Pre-Check of file setup")
     sys.stdout.write("\n Checking "+dir_path+"/inputs")
     #check that inputs are not formatted to processed name format
@@ -116,7 +117,7 @@ def pre_check(types, dir_path, cwd):
                     return 2
         else:
             sys.stdout.write("unexpected directory detected. potential issue at: "+dir_path+"/inputs/"+dir)
-            sys.stdout.write("Input issue -- FAIL"
+            sys.stdout.write("Input issue -- FAIL")
             return 2
     #check each file for "Galstep." If Match: return 2, print input fail
     sys.stdout.write("\n inputs unformatted - PASS")
