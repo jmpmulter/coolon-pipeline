@@ -28,7 +28,8 @@ def main():
     ##INITIALIZE
     #make sure settings file is searched for and added to filelist
     runmode=0 #mode in which the program will be operated TODO MAKE THIS USER INPUT
-    types = get_types(runmode) #the names of the different types of editing
+    types = get_types(runmode) #the names of the different types of conditions (control, OA, HA, ...)
+    ed_type = get_ed_type(runmode)# are we looking for A/I or C/U?
     init(types, runmode) #test mode init(0)
     #init(1) # User input mode
     #init(2, "INPATH")# Read in from file mode
@@ -96,10 +97,26 @@ def main():
     output_files_used(filelist, header, dir_path)
     sys.stdout.write("\n Execution Completed, Ending Program")
 
-#Pre_check: Returns 1 if files correctly set up. returns 2 if error in inputs, 3 if error in intermeds, 4 if error in outputs.
-#Pre_check processes inputs then intermeds then outputs, and returns on the first potential error detected.
-#An error in inputs may preclude detecting an issue in intermeds or outputs. intermeds error could preclude detecting in outputs
+
+def get_ed_type(runmode):
+    ed_type = ""
+    if (runmode == 0 | runmode == 1):
+        while(ed_type!="a"& ed_type!="c"):
+            ed_type = input("Run for A-to-I or C-to-U editing? Enter a or c").lower().strip() #note: incorrect inputs will just trigger the loop to repeat.
+            
+        return ed_type
+    elif runmode ==2:
+        #MAKE ABLE TO READ INPUT FROM A FILE
+        return 
+    else:
+        sys.stdout.write("\n ERROR in get_ed_type. runmode-based error. Exiting program")
+        sys.exit()
+
 def pre_check(dir_path, cwd):
+    """Checks if files are correctly set up. Returns 1 if files correctly set up. returns 2 if error in inputs, 3 if error in intermeds, 4 if error in outputs.
+    
+    pre_check processes inputs then intermeds then outputs, and returns on the first potential error detected.
+    An error in inputs may preclude detecting an issue in intermeds or outputs. intermeds error could preclude detecting in outputs"""
     sys.stdout.write("\n Performing Pre-Check of file setup")
     sys.stdout.write("\n Checking "+dir_path+"/inputs")
     #check that inputs are not formatted to processed name format
@@ -162,7 +179,7 @@ def init(types, runmode=1, in_path="",):
     #   already_init = True
     #make flexible for if init performed or not already
     if runmode == 3: #escape
-        return()
+        return
     elif runmode==0:
     #hardcoded test info
         print("Standard CL/OA test mode selected. 2 types")
