@@ -75,7 +75,7 @@ def main():
     os.chdir(dir_path)
     pxl_name = "./outputs/PXL.txt" #TODO MODIFY TO BE OF FORMAT: (a or c)_[types]_PXL.txt
     make_pxl(filelist[4][-1], filelist[3], pxl_name, ed_type)
-    filelist[5][0] = pxl_name
+    filelist[5].append(pxl_name) #changed to .apped rather than direct indexing to fix index out of range issue.
     #make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
     #MakeCSV
     csv_name = "./outputs/CSV.txt" #can modify for more flexibility later
@@ -314,7 +314,7 @@ def run_findgene(filelist, dir_path, ed_type):
         sys.stdout.write("\n COMPLETED find_gene of "+outpath)
 
 def run_compgene(filelist, dir_path,ed_type):
-    for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list
+    for i in range(0,len(filelist[3])): #1 fewer comparison than there are items in the list. TODO Confirm Range auto removes this hold.
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
             comp_gene(filelist[3][0],filelist[3][1],outpath, ed_type)#compare First 2 files
@@ -349,8 +349,11 @@ def vcf_filter1(vcf, filter_vcf, ed_type):
         open_vcf.seek(0)
         
         for line in open_vcf:
+        #TODO getting a bug in C/U execution in vcf_filter1() conditional. seeing if breaking up the if works 
             vcf_line = line.split('\t')
-            if "#" in line or vcf_line[0] == '/n' or vcf_line[3] != ref or vcf_line[4] != alt: #TODO Changes here for C/U -- this should work
+            if "#" in line or vcf_line[0] == '/n': #TODO Changes here for C/U -- this should work
+                continue
+            if vcf_line[3] != ref or vcf_line[4] != alt: #Split the conditional to avoid index out of range problems
                 continue
             #print(line)  
             n1 = vcf_line[9].split(':')[-1]
