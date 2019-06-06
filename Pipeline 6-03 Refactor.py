@@ -322,7 +322,7 @@ def run_compgene(filelist, dir_path,ed_type):
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
-            comp_gene(filelist[4][-1],filelist[3][i+1],outpath, ed_type)#compare most recent comparison file with next file on filelist
+            comp_gene(filelist[4][-1],filelist[3][i],outpath, ed_type)#compare most recent comparison file with next file on filelist
             filelist[4].append(outpath)
         
 def output_files_used(filelist, header, dir_path, ed_type):
