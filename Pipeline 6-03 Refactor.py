@@ -2,6 +2,7 @@ import sys
 import re
 import os
 import shutil
+from multiprocessing import Process
 #import pandas as pd
 #import numpy as np
 #from functools import reduce
@@ -12,6 +13,10 @@ import shutil
 
 ## init gets user input for paramaters of the program.
 ##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file. File structure may already be established, and maybe reading names from text fie
+
+#Make program crashable and resumable.
+#try to parallelize run_find_gene()
+
 
 def main():
 
@@ -30,6 +35,8 @@ def main():
     runmode=0 #mode in which the program will be operated TODO MAKE THIS USER INPUT
     types = get_types(runmode) #the names of the different types of conditions (control, OA, HA, ...)
     ed_type = get_ed_type(runmode)# are we looking for A/I or C/U?
+    find_gene_mode = get_find_gene_mode()
+    
     init(types, runmode) #test mode init(0)
     #init(1) # User input mode
     #init(2, "INPATH")# Read in from file mode
@@ -63,9 +70,9 @@ def main():
     run_gff3_filter(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed GFF3_Filter")
     #Findgene
-    sys.stdout.write("\n Running   FINDGENE")
-    run_findgene(filelist, dir_path, ed_type)
-    sys.stdout.write("\n Completed FINDGENE")
+    sys.stdout.write("\n Running   FINDGENE in mode" + find_gene_mode)
+    run_findgene(filelist, dir_path, ed_type, find_gene_mode)
+    sys.stdout.write("\n Completed FINDGENEin mode" + find_gene_mode)
     #COMPGENE
     sys.stdout.write("\n Running   COMPGENE")
     run_compgene(filelist, dir_path, ed_type)
@@ -80,10 +87,10 @@ def main():
     #MakeCSV
     csv_name = "./outputs/CSV.txt" #can modify for more flexibility later
     make_csv(filelist[5][0], csv_name, ed_type) #store in outputs and filelist[5][1]
-    filelist[5][1] = csv_name
+    filelist[5].append(csv_name)
     #Output filelist for confirmation that all files were correctly processed
     filelist_name = "./outputs/filelist_output.txt"
-    filelist[5][2] = filelist_name
+    filelist[5].append(filelist_name)
     output_files_used(filelist, header, dir_path, ed_type)
     sys.stdout.write("\n Execution Completed, Ending Program")
     sys.exit()#Ends the program
@@ -286,7 +293,11 @@ def standardize_NVCs(filelist, types, dir_path, cwd, directory, ed_type):
         os.rename(oldname, newname)
         filelist[1].append("./inputs/"+directory+"/"+newname)#make sure the path gets in here
     os.chdir(dir_path)
-        
+def get_find_gene_mode(): #gives the mode for running findgene.
+    user_in = input("Sequential (Legacy) or Parallel (Experimental) findgene mode? s/p").lower().strip()
+    return user_in
+    
+    
 def run_vcf_filter(filelist,dir_path, ed_type): #Helper function to run several calls of VCF_filter1
     for vcf_file in filelist[1]:
         os.chdir(dir_path)
@@ -303,7 +314,17 @@ def run_gff3_filter(filelist, dir_path, ed_type):
     gff3_filter(filelist[0][0], outpath, ed_type)
     filelist[0][1] = outpath #make sure the path gets in here
 
-def run_findgene(filelist, dir_path, ed_type):
+def run_find_gene(filelist, dir_path, ed_type, find_gene_mode):
+    if find_gene_mode = "s": 
+        sequential_run_findgene(filelist, dir_path, ed_type)
+    elif find_gene_mode = "p":
+        parallel_run_findgene(filelist, dir_path, ed_type)
+    else:
+        sys.stdout.write("\n Wrong find_genemode_mode input. defaulting to sequential (Legacy mode)")
+        sequential_run_findgene(filelist, dir_path, ed_type)
+
+
+def sequential_run_findgene(filelist, dir_path, ed_type):
     for filt_vcf in filelist[2]:
         os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
@@ -313,8 +334,24 @@ def run_findgene(filelist, dir_path, ed_type):
         filelist[3].append(outpath)#make sure the path gets in here
         sys.stdout.write("\n COMPLETED find_gene of "+outpath)
 
+def parallel_run_findgene(filelist, dir_path, ed_type):
+    proc = []
+    for filt_vcf in filelist[2]:
+        oschdir(dir_path)
+        clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
+        outpath = "./intermeds/"+clean_name+"_GENES.txt"
+        p = Process(target = find_gene(), args = (filt_vcf, filelist[0][1],outpath, ed_type), name = "FINDGENE RUN OF: "+outpath)
+        p.start()
+        proc.append(p)
+        filelist[3].append(outpath)#make sure the path gets in here
+    for p in proc: 
+        p.join() #Locks further execution of the main thread until all processes have executed
+    
+ 
+  
+
 def run_compgene(filelist, dir_path,ed_type):
-    for i in range(0,len(filelist[3])): #1 fewer comparison than there are items in the list. TODO Confirm Range auto removes this hold.
+    for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list. TODO Confirm Range auto removes this hold.
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
             comp_gene(filelist[3][0],filelist[3][1],outpath, ed_type)#compare First 2 files
