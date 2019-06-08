@@ -337,7 +337,7 @@ def sequential_run_findgene(filelist, dir_path, ed_type):
 def parallel_run_findgene(filelist, dir_path, ed_type):
     proc = []
     for filt_vcf in filelist[2]:
-        oschdir(dir_path)
+        os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_GENES.txt"
         p = Process(target = find_gene(), args = (filt_vcf, filelist[0][1],outpath, ed_type), name = "FINDGENE RUN OF: "+outpath)
