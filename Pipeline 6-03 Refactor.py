@@ -71,7 +71,7 @@ def main():
     sys.stdout.write("\n Completed GFF3_Filter")
     #Findgene
     sys.stdout.write("\n Running   FINDGENE in mode" + find_gene_mode)
-    run_findgene(filelist, dir_path, ed_type, find_gene_mode)
+    run_find_gene(filelist, dir_path, ed_type, find_gene_mode)
     sys.stdout.write("\n Completed FINDGENEin mode" + find_gene_mode)
     #COMPGENE
     sys.stdout.write("\n Running   COMPGENE")
