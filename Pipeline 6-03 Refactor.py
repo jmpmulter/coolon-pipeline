@@ -315,9 +315,9 @@ def run_gff3_filter(filelist, dir_path, ed_type):
     filelist[0][1] = outpath #make sure the path gets in here
 
 def run_find_gene(filelist, dir_path, ed_type, find_gene_mode):
-    if find_gene_mode = "s": 
+    if find_gene_mode == "s": 
         sequential_run_findgene(filelist, dir_path, ed_type)
-    elif find_gene_mode = "p":
+    elif find_gene_mode == "p":
         parallel_run_findgene(filelist, dir_path, ed_type)
     else:
         sys.stdout.write("\n Wrong find_genemode_mode input. defaulting to sequential (Legacy mode)")
