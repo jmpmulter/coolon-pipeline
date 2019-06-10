@@ -340,7 +340,7 @@ def parallel_run_findgene(filelist, dir_path, ed_type):
         os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_GENES.txt"
-        p = Process(target = find_gene(), args = (filt_vcf, filelist[0][1],outpath, ed_type), name = "FINDGENE RUN OF: "+outpath)
+        p = Process(target = find_gene(), args = ((filt_vcf, filelist[0][1],outpath, ed_type)), name = "FINDGENE RUN OF: "+outpath)
         p.start()
         proc.append(p)
         filelist[3].append(outpath)#make sure the path gets in here
@@ -466,7 +466,7 @@ def gff3_filter(gff3, filter_gff3, ed_type):
 #gff3_filter('dsechellia.gff3', 'filt_dsechellia.gff3')
 
 #takes the result of vcf_filter and gff3_filter
-#find_gene(vcf, gff3, file) takes a vcf file, a gff3 file and an out path (what you want your new file to be named) 
+#find_gene(vcf, gff3, file, editing type) takes a vcf file, a gff3 file and an out path (what you want your new file to be named) 
 #and will return a new file with the scaffold, vcf position and the gene ID. (can add more things by adding to line 38). 
 #must input the files into the function in this order or it will not work.
 
