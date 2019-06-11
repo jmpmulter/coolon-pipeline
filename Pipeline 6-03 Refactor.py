@@ -643,7 +643,7 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                     #print('TRUE')
                     if scafC == scafG:    #If the lines' scaffolds do match:
                         #find out how to get name of a file (f) 
-                        new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1]) #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
+                        new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1].strip()) #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
                         #print('^' + '\t' + file + '\t' + next(f))
                         
 def make_csv(pxl, outpath, ed_type):
@@ -673,7 +673,7 @@ def make_csv(pxl, outpath, ed_type):
             splitcar = line.split("\t")
             splitspa = splitcar[2].split(" ")
             #print(splitspa)
-            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6]+","+splitcar[3]) #TODO Confirm this works. 06-11-19 Fixed Typos
+            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[2]+","+splitspa[5]+","+splitcar[3]) #TODO Confirm this works. 06-11-19 Fixed Typos
             #print(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6].strip())
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
     main()
