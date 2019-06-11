@@ -78,20 +78,25 @@ def main():
     run_compgene(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed COMPGENE")
     #MakePXL
-    sys.stdout.write("\n Running MakePXL")
+    sys.stdout.write("\n Running   MakePXL")
     os.chdir(dir_path)
     pxl_name = "./outputs/PXL.txt" #TODO MODIFY TO BE OF FORMAT: (a or c)_[types]_PXL.txt
     make_pxl(filelist[4][-1], filelist[3], pxl_name, ed_type)
     filelist[5].append(pxl_name) #changed to .apped rather than direct indexing to fix index out of range issue.
     #make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
+    sys.stdout.write("\n Completed MakePXL")
     #MakeCSV
-    csv_name = "./outputs/CSV.txt" #can modify for more flexibility later
+    sys.stdout.write("\n Running MakeCSV")
+    csv_name = "./outputs/CSV.csv" #can modify for more flexibility later
     make_csv(filelist[5][0], csv_name, ed_type) #store in outputs and filelist[5][1]
     filelist[5].append(csv_name)
+    sys.stdout.write("\n Completed MakePXL")
     #Output filelist for confirmation that all files were correctly processed
+    sys.stdout.write("\n Outputting Filelist")
     filelist_name = "./outputs/filelist_output.txt"
     filelist[5].append(filelist_name)
     output_files_used(filelist, header, dir_path, ed_type)
+    sys.stdout.write("\n Completed Outputting Filelist")
     sys.stdout.write("\n Execution Completed, Ending Program")
     sys.exit()#Ends the program
 
@@ -287,7 +292,7 @@ def standardize_NVCs(filelist, types, dir_path, cwd, directory, ed_type):
         #sys.stdout.write("\n\nbam_step = oldname.split(_)[9]") #debug
         #sys.stdout.write(str(oldname.split("_"))) #debug
         
-        bam_step = oldname.split("_")[9].split(".")[0].strip()
+        bam_step = oldname.split("_")[9].split(".")[0].split("]")[0].strip() #Added the "]" here to remove the bracket left in names.
         newname = "NVC_"+ed_type+"_"+type_info+"_Galstep"+gal_num+"_ON_DATA_"+fasta_step+"_"+bam_step+".vcf"#New Format (v2): NVC_EDTYPE_TYPE#_TYPE_GALAXY STEP NUMBER_ON_DATA_FASTASTEP#_BAMSTEP#.vcf
         os.chdir("./inputs/"+directory)
         os.rename(oldname, newname)
@@ -348,11 +353,6 @@ def parallel_run_findgene(filelist, dir_path, ed_type):
     for p in proc: 
         p.join() #Locks further execution of the main thread until all processes have executed
 
-def parallel_run_fg_helper(args): #TODO DELETE IF NOT NECESSARY
-    find_gene(args[0],args[1],args[2],args[3])
- 
-  
-
 def run_compgene(filelist, dir_path,ed_type):
     for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list. TODO Confirm Range auto removes this hold.
         if(i==0):
@@ -368,7 +368,7 @@ def run_compgene(filelist, dir_path,ed_type):
 def output_files_used(filelist, header, dir_path, ed_type):
     new_file = open(filelist[5][2], 'x')
     for i in range(0,len(header)):
-        new_file.write(header[i]+": ")
+        new_file.write(header[i]+":\t")
         for j in range(0,len(filelist[i])):
             new_file.write(filelist[i][j]+"\t")
         new_file.write("\n")
@@ -673,7 +673,7 @@ def make_csv(pxl, outpath, ed_type):
             splitcar = line.split("\t")
             splitspa = splitcar[2].split(" ")
             #print(splitspa)
-            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[2]+","+splitspa[5]+","+splitcar[3]) #TODO Confirm this works. 06-11-19 Fixed Typos
+            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[2]+","+splitspa[5]+","+splitcar[3]+"\n") #TODO Confirm this works. 06-11-19 Fixed Typos
             #print(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6].strip())
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
     main()
