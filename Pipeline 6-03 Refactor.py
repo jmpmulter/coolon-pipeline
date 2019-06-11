@@ -643,7 +643,7 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                     #print('TRUE')
                     if scafC == scafG:    #If the lines' scaffolds do match:
                         #find out how to get name of a file (f) 
-                        new_file.write('^' + '\t' + file + '\t' + next(f)+'\t'+l0[-1]) #TODO MAKE SURE THIS CHANGE WORKS
+                        new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1]) #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
                         #print('^' + '\t' + file + '\t' + next(f))
                         
 def make_csv(pxl, outpath, ed_type):
