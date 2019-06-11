@@ -45,7 +45,7 @@ def main():
     #ADD: ability to read loaded from input
     while(loaded!="c"):
         print(types)
-        loaded=input("Load Input files into their appropriate folders. Enter \'c\' to Continue, or \'e\' to Exit the program.").strip().lower()
+        loaded=input("Load Input files into their appropriate folders. Enter \'c\' to Continue, or \'e\' to Exit the program.\t").strip().lower()
         if loaded=="e":
             break
     if loaded =="e":
@@ -70,7 +70,7 @@ def main():
     run_gff3_filter(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed GFF3_Filter")
     #Findgene
-    sys.stdout.write("\n Running   FINDGENE in mode" + find_gene_mode)
+    sys.stdout.write("\n Running   FINDGENE in mode " + find_gene_mode)
     run_find_gene(filelist, dir_path, ed_type, find_gene_mode)
     sys.stdout.write("\n Completed FINDGENEin mode" + find_gene_mode)
     #COMPGENE
@@ -100,7 +100,7 @@ def get_ed_type(runmode):
     ed_type = ""
     if (runmode == 0 or runmode == 1):
         while(ed_type!="a" and ed_type!="c"):
-            ed_type = input("Run for A-to-I or C-to-U editing? Enter a or c").lower().strip() #note: incorrect inputs will just trigger the loop to repeat.  
+            ed_type = input("Run for A-to-I or C-to-U editing? Enter a or c\t").lower().strip() #note: incorrect inputs will just trigger the loop to repeat.  
         return ed_type
     elif runmode ==2:
         #MAKE ABLE TO READ INPUT FROM A FILE
@@ -125,7 +125,7 @@ def run_pre_check(dir_path, cwd):
     pre_check_val = pre_check(dir_path, cwd)
     if pre_check_val!=1:
         sys.stdout.write("\n"+pre_check_meanings[pre_check_val])
-        quit_in_pre = input("pre_check detected errors. Proceed anyway? c to continue, r to clear intermeds and outputs, n to quit program. c/r/n ").lower().strip()
+        quit_in_pre = input("pre_check detected errors. Proceed anyway? c to continue, r to clear intermeds and outputs, n to quit program. c/r/n\t").lower().strip()
         if(quit_in_pre=="n"):
             sys.stdout.write("Exiting. Goodbye")
             sys.exit()
@@ -165,7 +165,7 @@ def pre_check(dir_path, cwd):
             sys.stdout.write("Input issue -- FAIL")
             return 2
     #check each file for "Galstep." If Match: return 2, print input fail
-    sys.stdout.write("\n inputs unformatted - PASS")
+    sys.stdout.write(" inputs unformatted - PASS")
         
     
     #check that intermediates empty
@@ -189,7 +189,7 @@ def pre_check(dir_path, cwd):
 
 def init(types, runmode=1, in_path="",):
     if(runmode == 0): #condition to skip re-placing the files for test mode
-        skip_init = input("skip init? y/n")
+        skip_init = input("skip init? y/n\t")
         if (skip_init=="y"):
             return
     os.mkdir("inputs") #for raw input files
@@ -219,7 +219,7 @@ def init(types, runmode=1, in_path="",):
     elif runmode ==1:
         #user input
         print("Manual Input Selected.")
-        numtypes=input("Number of types (integer, 2 is standard for control and experimental)")
+        numtypes=input("Number of types (integer, 2 is standard for control and experimental)\t")
 #       """raw_types=raw_input("In Order, what are the names of these types (separated by commas)").split(",").strip()
 #       for i in range(0,len(raw_types)):
 #           typenames.append(("type{}"format(str(i)),raw_types[i]))
@@ -249,11 +249,11 @@ def init(types, runmode=1, in_path="",):
 def get_types(runmode):
     types = []
     if runmode == 3: #Input of a new runmode
-        runmode = input("input new mode (0 for standard test, 1 for manual entry, 2 for document entry")
+        runmode = input("input new mode (0 for standard test, 1 for manual entry, 2 for document entry\t")
     if runmode == 0: #test
         types =["CL","OA"]
     elif runmode == 1: #user input
-        types=input("In Order, what are the names of these types (separated by commas)").split(",").strip()
+        types=input("In Order, what are the names of these types (separated by commas)\t").split(",").strip()
     elif runmode == 2: #read from file
         #read types from file
         pass
@@ -294,7 +294,7 @@ def standardize_NVCs(filelist, types, dir_path, cwd, directory, ed_type):
         filelist[1].append("./inputs/"+directory+"/"+newname)#make sure the path gets in here
     os.chdir(dir_path)
 def get_find_gene_mode(): #gives the mode for running findgene.
-    user_in = input("Sequential (Legacy) or Parallel (Experimental) findgene mode? s/p").lower().strip()
+    user_in = input("Sequential (Legacy) or Parallel (Experimental) findgene mode? s/p\t").lower().strip()
     return user_in
     
     
@@ -340,13 +340,16 @@ def parallel_run_findgene(filelist, dir_path, ed_type):
         os.chdir(dir_path)
         clean_name = filt_vcf.split("/")[2].split(".")[0].strip()
         outpath = "./intermeds/"+clean_name+"_GENES.txt"
-        p = Process(target = find_gene(), args = ((filt_vcf, filelist[0][1],outpath, ed_type)), name = "FINDGENE RUN OF: "+outpath)
+        p = Process(target = find_gene, args = (filt_vcf, filelist[0][1],outpath, ed_type), name = "FINDGENE RUN OF: "+outpath)
+        
         p.start()
         proc.append(p)
         filelist[3].append(outpath)#make sure the path gets in here
     for p in proc: 
         p.join() #Locks further execution of the main thread until all processes have executed
-    
+
+def parallel_run_fg_helper(args): #TODO DELETE IF NOT NECESSARY
+    find_gene(args[0],args[1],args[2],args[3])
  
   
 
@@ -628,13 +631,15 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                 scafG = l0[0] # For matching to scafC
                 posG = l0[1] #For matching to posC
                 if posG == 'A': #if it's not a full data line (format of gene has an enter in it beofre A and G counts)
-                    continue #Unless some weirdness occurs in processing, this condition should never trigger
+                    continue #Unless some weirdness occurs in processing, this condition should never trigger. The comment to the left may be wrong.
+                if posG == 'C':
+                    continue #TODO See if this fixes the bug for only comp C runs.
                 #print('=========POS G=======')
                 #print(posG)
                 
             
                 
-                if int(posC) == int(posG): #If the lines' posiitons do match:
+                if int(posC) == int(posG): #If the lines' posiitons do match: #TODO CONFIRM FIXES WORKED
                     #print('TRUE')
                     if scafC == scafG:    #If the lines' scaffolds do match:
                         #find out how to get name of a file (f) 
@@ -668,7 +673,7 @@ def make_csv(pxl, outpath, ed_type):
             splitcar = line.split("\t")
             splitspa = splitcar[2].split(" ")
             #print(splitspa)
-            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6]+spiltcar[3]) #TODO Confirm this works.
+            new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6]+","+splitcar[3]) #TODO Confirm this works. 06-11-19 Fixed Typos
             #print(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6].strip())
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
     main()
