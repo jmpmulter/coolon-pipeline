@@ -362,7 +362,7 @@ def run_compgene(filelist, dir_path,ed_type):
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
-            comp_gene(filelist[4][-1],filelist[3][i],outpath, ed_type)#compare most recent comparison file with next file on filelist
+            comp_gene(filelist[4][-1],filelist[3][i+1],outpath, ed_type)#compare most recent comparison file with next file on filelist
             filelist[4].append(outpath)
         
 def output_files_used(filelist, header, dir_path, ed_type):
@@ -566,7 +566,7 @@ def comp_gene(f0, f1, file, ed_type):
         scaffold0 = l0[0]
         if scaffold0 == '' or scaffold0 == ref or scaffold0 == '\n':
             continue
-        pos0 = l0[1]
+        pos0 = l0[1].strip()
         #print(pos0)
 
         for line1 in open_f1:
@@ -576,7 +576,7 @@ def comp_gene(f0, f1, file, ed_type):
             scaffold1 = l1[0]
             if scaffold1 == '' or scaffold1 == ref or scaffold1 == '\n':
                 continue
-            pos1 = l1[1]
+            pos1 = l1[1].strip()
             #print(scaffold1 + 'ONE') 
 
             if scaffold0 == scaffold1 and pos0 == pos1:
@@ -587,13 +587,6 @@ def comp_gene(f0, f1, file, ed_type):
     open_f0.close()
     open_f1.close()
         
-#comp_gene('C1_genes.txt', 'C2_genes.txt', 'comp_C1_2.txt')
-#comp_gene('C1_genes.txt', 'C3_genes.txt', 'comp_C1_3.txt')
-#comp_gene('comp_C1_2.txt', 'comp_C1_3.txt', 'repC_genes.txt')
-#comp_gene('HA1_genes.txt', 'HA2_genes.txt', 'comp_HA1_2.txt')
-#comp_gene('HA1_genes.txt', 'HA3_genes.txt', 'comp_HA1_3.txt')
-#comp_gene('comp_HA1_2.txt', 'comp_HA1_3.txt', 'repHA_genes.txt')
-#comp_gene("comp_CL_1_2_3_All.txt","comp_OA_1_2_3_All.txt","compFinal.txt")
 
 def make_pxl(compOutput, genes, outpath, ed_type):
     compO = open(compOutput, 'r')
