@@ -12,15 +12,13 @@ from multiprocessing import Process
 #from scipy.stats import ttest_ind 
 
 ## init gets user input for paramaters of the program.
-##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file. File structure may already be established, and maybe reading names from text fie
+##0== hardcoded test info for OA/CL set. 1== user popup/console input. 2== read input from text file. 3 == try to input from command line. File structure may already be established, and maybe reading names from text fie
 
-#Make program crashable and resumable.
-#try to parallelize run_find_gene()
+#TODO Make program crashable and resumable.
+
 
 
 def main():
-
-##TODO CALL PRE_CHECK AT THE APPROPRIATE LOCATION
     
     header = ["0: .gff3 and Settings","1: *.vcf","2: *FILT_NVC","3: Findgene Output","4: compgene outputs","5: Final Outputs"]
     filelist = [["","",""],[],[],[],[""],[]] #filelist is a list of all inputted and logged files.
@@ -28,7 +26,8 @@ def main():
     dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
     os.chdir(dir_path) #move the cwd to the dir_path
     cwd = os.getcwd() #This will be useful for doing things within the current directory
-    #0=[.gff3,filt.gff3, setup_file], 1=*.vcf, 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output, filelist_output]
+    #FILELIST COMPONENTS
+    #0=[.gff3,filt.gff3, setup_file], 1=*.vcf (Raw files, directly from Galaxy), 2=*filt_vcf, 3= *findgene output, 4=compgene outputs, 5= OUTPUTS [make_pxl output, make_csv Output, filelist_output]
     
     ##INITIALIZE
     #make sure settings file is searched for and added to filelist
@@ -113,24 +112,41 @@ def main():
     sys.stdout.write("\n Completed MakePXL")
    
     #MakeCSV
+    
     sys.stdout.write("\n Running MakeCSV")
     #csv_name = "./outputs/CSV.csv" #can modify for more flexibility later
     csv_name = csv_namer(dir_path, filelist) #TODO confirm this works
-    make_csv(filelist[5][0], csv_name, ed_type) #store in outputs and filelist[5][1]
-    filelist[5].append(csv_name)
+    make_csv(filelist[5][0], csv_name, ed_type, filelist) #store in outputs and filelist[5][1]
+    #filelist[5].append(csv_name) #Added to make_csv
     sys.stdout.write("\n Completed MakePXL")
     
     #Output filelist for confirmation that all files were correctly processed
     sys.stdout.write("\n Outputting Filelist")
+    
     filelist_name = "./outputs/filelist_output.txt"
     filelist[5].append(filelist_name)
     output_files_used(filelist, header, dir_path, ed_type)
+    
     sys.stdout.write("\n Completed Outputting Filelist")
     
     sys.stdout.write("\n Execution Completed, Ending Program")
     sys.exit()#Ends the program
 
 def process_runline():
+    """Reads sys.argv and recomposes it as a list. This list sets out what information the program has or will ask for from console input.
+    
+        Sample console call for just runmode: python3 Pipeline\ 6-03\ Refactor.py 1
+        Sample input: python3 Pipeline\ 6-03\ Refactor.py 3 a p True c ["CL","OA"]
+        Full input key:
+        sys.argv[0]->The Script's name
+        sys.argv[1]-> runmode . How the program should expect input. 0-Test,1-User input,2-From a file, 3- From command line. Enter 3 if entering multiple command line args.
+        sys.argv[2]-> ed_type . Type of editing to look for. a -> A-to-I Editing; c -> C-to-U Editing
+        sys.argv[3]-> find_gene_mode . p for parallel (best mode to run in, much faster if you have multiple processors) or s for sequential (legacy mode, works about the same if you only have on processor)
+        Note: Unless a specific reason forbids it, sys.argv[3] should always be p. This can cut standard execution time from 6+ hours to approx 2.5 hours.
+        sys.argv[4]-> skip_init .True if the file structure is already established in the directory of the file. False if it is not.
+        sys.argv[5]-> loaded .c to continue, if the fresh input files are properly loaded into their folders in inputs. w if they are not. If they aren't, this waits for console input of c later on. Note that e exits due to legacy code.
+        sys.argv[6] -> types . List of the types of files used (for example, Control and OA would be input as ["CL","OA"]). Generally follows the format ["Typnename1", "typename2"] ex/ 
+    """
     runmode = 0
     ed_type = ""
     find_gene_mode = ""
@@ -717,7 +733,8 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                         new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1].strip()+"\n") #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
                         #print('^' + '\t' + file + '\t' + next(f))
                         
-def make_csv(pxl, outpath, ed_type):
+def make_csv(pxl, outpath, ed_type, filelist):
+    filelist[5].append(outpath)
     ref = ""
     alt = ""
     if(ed_type =="a"):
