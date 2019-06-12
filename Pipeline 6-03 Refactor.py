@@ -32,16 +32,39 @@ def main():
     
     ##INITIALIZE
     #make sure settings file is searched for and added to filelist
-    runmode=0 #mode in which the program will be operated TODO MAKE THIS USER INPUT
-    types = get_types(runmode) #the names of the different types of conditions (control, OA, HA, ...)
-    ed_type = get_ed_type(runmode)# are we looking for A/I or C/U?
-    find_gene_mode = get_find_gene_mode()
     
-    init(types, runmode) #test mode init(0)
-    #init(1) # User input mode
-    #init(2, "INPATH")# Read in from file mode
+    #ARGS POTENTIAL INPUT [FILENAME,runmode, ed_type, find_gene_mode, skip_init (True/False), loaded (c/w/e), types]
+    inputs = process_runline()
+    runmode=inputs[1] #mode in which the program will be operated TODO MAKE THIS USER INPUT
+    types = []
+    if(inputs[6]!= [""]):
+        types = inputs[6]
+    else:
+        types = get_types(runmode) #the names of the different types of conditions (control, OA, HA, ...)
+    
+    ed_type = ""
+    if(inputs[2]!= [""]):
+        ed_type = inputs[2]
+    else:
+        ed_type = get_ed_type(runmode)# are we looking for A/I or C/U?
+    
+    find_gene_mode = ""
+    if(inputs[3]!=""):
+        find_gene_mode = inputs[3]
+    else:
+        find_gene_mode = get_find_gene_mode()
+    
+    skip_init = inputs[4]
+    if(skip_init): 
+        continue
+    else:
+        init(types, runmode) #test mode init(0)
+        #init(1) # User input mode
+        #init(2, "INPATH")# Read in from file mode
     ##USER LOADS FILES
     loaded = ""
+    if(inputs[5]!=""):
+        loaded = inputs[5]   
     #ADD: ability to read loaded from input
     while(loaded!="c"):
         print(types)
@@ -50,6 +73,7 @@ def main():
             break
     if loaded =="e":
         sys.exit() #exit before data intensive steps
+    
     #RUN pre_check()
     sys.stdout.write("\n Running    pre_check")
     
@@ -77,29 +101,83 @@ def main():
     sys.stdout.write("\n Running   COMPGENE")
     run_compgene(filelist, dir_path, ed_type)
     sys.stdout.write("\n Completed COMPGENE")
+    
     #MakePXL
     sys.stdout.write("\n Running   MakePXL")
     os.chdir(dir_path)
-    pxl_name = "./outputs/PXL.txt" #TODO MODIFY TO BE OF FORMAT: (a or c)_[types]_PXL.txt
+    #pxl_name = "./outputs/PXL.txt" #TODO MODIFY TO BE OF FORMAT: (a or c)_[types]_PXL.txt
+    pxl_name = pxl_namer(dir_path, types, ed_type)#TODO Make this give the PXL name
     make_pxl(filelist[4][-1], filelist[3], pxl_name, ed_type)
     filelist[5].append(pxl_name) #changed to .apped rather than direct indexing to fix index out of range issue.
     #make_pxl(filelist[4][-1]) #store in outputs and filelist[5][0]
     sys.stdout.write("\n Completed MakePXL")
+   
     #MakeCSV
     sys.stdout.write("\n Running MakeCSV")
-    csv_name = "./outputs/CSV.csv" #can modify for more flexibility later
+    #csv_name = "./outputs/CSV.csv" #can modify for more flexibility later
+    csv_name = csv_namer(dir_path, filelist) #TODO confirm this works
     make_csv(filelist[5][0], csv_name, ed_type) #store in outputs and filelist[5][1]
     filelist[5].append(csv_name)
     sys.stdout.write("\n Completed MakePXL")
+    
     #Output filelist for confirmation that all files were correctly processed
     sys.stdout.write("\n Outputting Filelist")
     filelist_name = "./outputs/filelist_output.txt"
     filelist[5].append(filelist_name)
     output_files_used(filelist, header, dir_path, ed_type)
     sys.stdout.write("\n Completed Outputting Filelist")
+    
     sys.stdout.write("\n Execution Completed, Ending Program")
     sys.exit()#Ends the program
 
+def process_runline():
+    runmode = 0
+    ed_type = ""
+    find_gene_mode = ""
+    skip_init = ""
+    loaded = ""
+    types = [""]
+    if len(sys.argv) == 1:
+        runmode = sys.argv[1]
+    elif len(sys.argv)>1:
+        runmode = sys.argv[1]#0- Test,1-User input,2-From a file, 3- From command line: 
+        ed_type = sys.argv[2]#a or c
+        find_gene_mode = sys.argv[3] #p or s
+        skip_init = sys.argv[4] #True of False
+        loaded = sys.argv[5] #c for continue or w for wait
+        types = sys.argv[6] #["Typnename1", "typename2"] ex/ ["CL","OA"]
+    else:
+        print("No runline commands detected. Manual command entry mode")
+        runmode = 1
+    return [sys.argv[0],runmode, ed_type, find_gene_mode, skip_init, loaded, types]
+        
+
+def csv_namer(dir_path, filelist):
+    os.chdir(dir_path)
+    pxl_name = filelist[5][0]
+    prename = pxl_name.split("PXL")[0]
+    name = prename+"CSV.csv"
+    return name
+    
+def pxl_namer(dir_path, types, ed_type):
+    os.chdir(dir_path)
+    prefix = "./outputs/"
+    mid = ""
+    suffix = ""
+    if ed_type =="a":
+        mid = "A_to_I_"
+    elif ed_type == "c":
+        mid = "C_to_U_"
+    else:
+        print("Error in pxl_namer(): ed_type incorrect")
+        continue
+    for item in types:
+        mid+=item
+    suffix = "_PXL.txt"
+    name = prefix+mid+suffix
+    return name
+
+def CSV_namer()
 
 def get_ed_type(runmode):
     ed_type = ""
