@@ -187,8 +187,8 @@ def pxl_namer(dir_path, types, ed_type):
     else:
         print("Error in pxl_namer(): ed_type incorrect")
         pass
-    for item in types:
-        mid+=item
+    for i in range(0,len(types)):
+        mid+=types[i]
     suffix = "_PXL.txt"
     name = prefix+mid+suffix
     return name
