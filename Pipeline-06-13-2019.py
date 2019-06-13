@@ -153,9 +153,9 @@ def process_runline():
     skip_init = ""
     loaded = ""
     types = [""]
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 2:
         runmode = sys.argv[1]
-    elif len(sys.argv)>1:
+    elif len(sys.argv)>2:
         runmode = sys.argv[1]#0- Test,1-User input,2-From a file, 3- From command line: 
         ed_type = sys.argv[2]#a or c
         find_gene_mode = sys.argv[3] #p or s
@@ -192,8 +192,6 @@ def pxl_namer(dir_path, types, ed_type):
     suffix = "_PXL.txt"
     name = prefix+mid+suffix
     return name
-
-def CSV_namer()
 
 def get_ed_type(runmode):
     ed_type = ""
