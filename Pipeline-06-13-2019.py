@@ -55,7 +55,7 @@ def main():
     
     skip_init = inputs[4]
     if(skip_init): 
-        continue
+        pass
     else:
         init(types, runmode) #test mode init(0)
         #init(1) # User input mode
@@ -186,7 +186,7 @@ def pxl_namer(dir_path, types, ed_type):
         mid = "C_to_U_"
     else:
         print("Error in pxl_namer(): ed_type incorrect")
-        continue
+        pass
     for item in types:
         mid+=item
     suffix = "_PXL.txt"
