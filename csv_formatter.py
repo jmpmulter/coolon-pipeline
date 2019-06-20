@@ -47,7 +47,8 @@ def process_csv(runmode,in_path,out_path):
     outfile.write(out_header)
     
     for line in infile:
-    
+        
+        
         buff_ln = ""
         #no_ratio = False #flipped to true if 
         l0 = line
