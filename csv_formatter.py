@@ -7,8 +7,8 @@ def main():
     os.chdir(dir_path)
     
     instr = process_runline()#instructions
-    for item in instr:
-        print(item) #Confirms input information
+    #for item in instr:
+    #    print(item) #Confirms input information
     
     
     runmode = instr[0]
@@ -99,8 +99,8 @@ def process_csv(runmode,in_path,out_path):
         #print(ID)
         
         to_add = [Name,ID,nCounts,ratio_r_over_a,ratio_a_over_r]
-        for item in to_add:
-            print(item)
+        #for item in to_add:
+        #    print(item)
         buff_ln = l0.strip()+","+",".join(to_add)+"\n"#TODO ADD ITEMS IN SAME ORDER AS HEADER
         #print(buff_ln)
         #print("\n\n")
