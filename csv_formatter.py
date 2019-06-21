@@ -48,24 +48,45 @@ def process_csv(runmode,in_path,out_path):
     
     for line in infile:
         
-        
         buff_ln = ""
+        ID = ""
         #no_ratio = False #flipped to true if 
         l0 = line
         l0s = l0.split(",")
         cRef = int(l0s[3].strip())
         cAlt = int(l0s[4].strip())
         nCounts = str(cRef+cAlt) #total number of counts
+    
         info = l0s[5].strip().split(";")# information from geneinfo column
+    
+        try:
+            for item in info: #TODO COPY this flexible model for all info fields
+                if("gene_id" in item):
+                    ID = item.strip().split("=")[1] #Generally a FBGN Number
+            if ID == "":
+                ID = "NA"
+        except:
+            ID = "NA"
+            print("Non-standard ID field")
         
-        ID = info[0].split(":")[1].strip() #Generally a FBGN Number
-
-        Name = info[1].split("=")[1].strip() #Generally GM......
         
+        try:
+            for item in info: #TODO COPY this flexible model for all info fields
+                if("Name" in item):
+                    Name = item.strip().split("=")[1] #Generally a FBGN Number
+            if Name == "":
+                Name = "NA"
+            #Name = info[1].split("=")[1].strip() #Generally GM......
+        except:
+            Name = "NA"
+            print("Non-standard Name Field")
+            
+            
+            
         ratio_r_over_a = ""
         ratio_a_over_r = ""
-        if((cRef==0)or(cAlt==0)): #TODO figure out how to get around dividing by 0 errors
-        #    no_ratio = True
+        
+        if((cRef==0)or(cAlt==0)): #TODO figure out how to get around dividing by 0 errors. Not a problem for right now but could be in the future.
             ratio_r_over_a = "NA"
             ratio_a_over_r = "NA"  
         else:
@@ -74,15 +95,18 @@ def process_csv(runmode,in_path,out_path):
             ratio_r_over_a = str(format(rda,'.4f'))
             ratio_a_over_r = str(format(adr,'.4f'))
         
-        print(Name)
-        print(ID)
+        #print(Name)
+        #print(ID)
+        
         to_add = [Name,ID,nCounts,ratio_r_over_a,ratio_a_over_r]
         for item in to_add:
             print(item)
         buff_ln = l0.strip()+","+",".join(to_add)+"\n"#TODO ADD ITEMS IN SAME ORDER AS HEADER
-        print(buff_ln)
-        print("\n\n")
+        #print(buff_ln)
+        #print("\n\n")
         outfile.write(buff_ln)
+    
+        
 #scaffold_3174,1865,./intermeds/NVC_a_type1_OA_Galstep99_ON_DATA_22_98_FILT_GENES.txt,79,13,ID=gene:FBgn0171184;Name=GM16268;biotype=protein_coding;gene_id=FBgn0171184;logic_name=flybaseGM16268,FBgn0171184,92,6.076923076923077,0.16455696202531644
     infile.close()
     outfile.close()
