@@ -449,12 +449,12 @@ def run_compgene(filelist, dir_path,ed_type):
     for i in range(0,len(filelist[3])-1): #1 fewer comparison than there are items in the list. TODO Confirm Range auto removes this hold.
         if(i==0):
             outpath = "./intermeds/COMP_0.txt"
-            comp_gene(filelist[3][0],filelist[3][1],outpath, ed_type)#compare First 2 files
+            comp_gene_v2(filelist[3][0],filelist[3][1],outpath, ed_type)#compare First 2 files
             filelist[4].append(outpath) #TODO FATAL bug here. Not sure why. maybe [4][0]. Confirm .append() has fixed this.
         else:
             #compare filelist[4][-1] to filelist[3][i] #TODO potentially to i+1?
             outpath = "./intermeds/COMP_{}.txt".format(str(i))
-            comp_gene(filelist[4][-1],filelist[3][i+1],outpath, ed_type)#compare most recent comparison file with next file on filelist
+            comp_gene_v2(filelist[4][-1],filelist[3][i+1],outpath, ed_type)#compare most recent comparison file with next file on filelist
             filelist[4].append(outpath)
         
 def output_files_used(filelist, header, dir_path, ed_type):
@@ -673,12 +673,57 @@ def comp_gene(f0, f1, file, ed_type):
 
             if scaffold0 == scaffold1 and pos0 == pos1:
                 new_file.write(scaffold0 + ' ' + pos0 + '\n')
+                #TODO URGENT ADD break or Duplicate check here.
         open_f1.seek(0)
 
     new_file.close()
     open_f0.close()
     open_f1.close()
+
+def comp_gene_v2(f0,f1,file,ed_type):
+    #TODO build this to compare position info, not just original info.
+    ref = ""
+    alt = ""
+    if(ed_type =="a"):
+        ref = "A"
+        alt = "G"
+    elif(ed_type=="c"):
+        ref = "C"
+        alt = "T"
+    new_file = open(file, 'x')
+    open_f0 = open(f0, 'r')
+    open_f1 = open(f1, 'r')
+    open_f0.seek(0)
+    open_f1.seek(0)
+    
+    for line0 in open_f0:
+        l0 = line0.split(' ')
+        scaffold0 = l0[0]
+        if scaffold0 == '' or scaffold0 == ref or scaffold0 == '\n':
+            continue
+        pos0 = l0[1].strip()
         
+        gi0 = l0[2].strip()#GENEINFO = info about gene
+
+        for line1 in open_f1:
+            l1 = line1.split(' ')
+            scaffold1 = l1[0]
+            
+            
+            if scaffold1 == '' or scaffold1 == ref or scaffold1 == '\n':
+                continue
+            pos1 = l1[1].strip()
+            gi1 = l1[2].strip()
+            #print(scaffold1 + 'ONE') 
+
+            if scaffold0 == scaffold1 and pos0 == pos1 and gi0==gi1: #and GENEINFO = GENEINFO
+                new_file.write(scaffold0 + ' ' + pos0 + '  '+gi0+'\n') #AND WRITE GENEINFO
+                
+        open_f1.seek(0)
+
+    new_file.close()
+    open_f0.close()
+    open_f1.close()
 
 def make_pxl(compOutput, genes, outpath, ed_type):
     compO = open(compOutput, 'r')
@@ -694,41 +739,40 @@ def make_pxl(compOutput, genes, outpath, ed_type):
         
     for line in compO:
         #print(line)
-        l = line.split(' ')
-        if len(l) != 2:
+        l0 = line.split(' ')
+        if len(l0) != 2:
             continue
             
-        scafC = l[0] #scaffold of comparison location
-        posC = l[1] #position of comparison location on scaffold
+        scafC = l0[0] #scaffold of comparison location
+        posC = l0[1] #position of comparison location on scaffold
+        giC =l0[2]
         #print('========POS C========')
         #print(posC)
         
-        new_file.write(scafC + '\t' + posC) #Writes the scaffold and position to the PXL
+        new_file.write(scafC + '\t' + posC+'\t'+giC) #Writes the scaffold and position to the PXL
         #print(scafC + '\t' + posC)
         
         for file in genes:
             f = open(file, 'r')
             #print(f)
-            for line0 in f:
-                l0 = line0.split(' ')
-                #print(l0)
-                #print(l0)
-                scafG = l0[0] # For matching to scafC
-                posG = l0[1] #For matching to posC
+            for line1 in f:
+                l1 = line1.split(' ')
+                scafG = l1[0] # For matching to scafC
+                posG = l1[1] #For matching to posC
+                giGC = l1[2]
                 if posG == 'A': #if it's not a full data line (format of gene has an enter in it beofre A and G counts)
                     continue #Unless some weirdness occurs in processing, this condition should never trigger. The comment to the left may be wrong.
                 if posG == 'C':
                     continue #TODO See if this fixes the bug for only comp C runs.
                 #print('=========POS G=======')
                 #print(posG)
-                
-            
-                
+
                 if int(posC) == int(posG): #If the lines' posiitons do match: #TODO CONFIRM FIXES WORKED
                     #print('TRUE')
                     if scafC == scafG:    #If the lines' scaffolds do match:
                         #find out how to get name of a file (f) 
-                        new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1].strip()+"\n") #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
+                        if giC==giG: #If the genes at the positions are the same    
+                            new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1].strip()+"\n") #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
                         #print('^' + '\t' + file + '\t' + next(f))
                         
 def make_csv(pxl, outpath, ed_type, filelist):
