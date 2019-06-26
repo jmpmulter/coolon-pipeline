@@ -118,7 +118,7 @@ def main():
     csv_name = csv_namer(dir_path, filelist) #TODO confirm this works
     make_csv(filelist[5][0], csv_name, ed_type, filelist) #store in outputs and filelist[5][1]
     #filelist[5].append(csv_name) #Added to make_csv
-    sys.stdout.write("\n Completed MakePXL")
+    sys.stdout.write("\n Completed MakeCSV")
     
     #Output filelist for confirmation that all files were correctly processed
     sys.stdout.write("\n Outputting Filelist")
@@ -759,7 +759,7 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                 l1 = line1.split(' ')
                 scafG = l1[0] # For matching to scafC
                 posG = l1[1] #For matching to posC
-                giGC = l1[2]
+                giG = l1[2] #Potentially fixed an error here
                 if posG == 'A': #if it's not a full data line (format of gene has an enter in it beofre A and G counts)
                     continue #Unless some weirdness occurs in processing, this condition should never trigger. The comment to the left may be wrong.
                 if posG == 'C':
@@ -773,7 +773,9 @@ def make_pxl(compOutput, genes, outpath, ed_type):
                         #find out how to get name of a file (f) 
                         if giC==giG: #If the genes at the positions are the same    
                             new_file.write('^' + '\t' + file + '\t' + next(f).strip()+'\t'+l0[-1].strip()+"\n") #TODO for some reason, a \n is being added by next(f). This is a problem, causes maek_pxl to bug out. tried to fix with .strip()
+                            break #skips to the next file
                         #print('^' + '\t' + file + '\t' + next(f))
+                        
                         
 def make_csv(pxl, outpath, ed_type, filelist):
     filelist[5].append(outpath)
