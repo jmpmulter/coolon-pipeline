@@ -740,7 +740,7 @@ def make_pxl(compOutput, genes, outpath, ed_type):
     for line in compO:
         #print(line)
         l0 = line.split(' ')
-        if len(l0) != 2:
+        if len(l0) != 3:
             continue
             
         scafC = l0[0] #scaffold of comparison location
@@ -807,5 +807,6 @@ def make_csv(pxl, outpath, ed_type, filelist):
             #print(splitspa)
             new_file.write(scaf+","+pos+","+splitcar[1]+","+splitspa[2]+","+splitspa[5]+","+splitcar[3]) #TODO Confirm this works. 06-11-19 Fixed Typos
             #print(scaf+","+pos+","+splitcar[1]+","+splitspa[3]+","+splitspa[6].strip())
+            
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
     main()
