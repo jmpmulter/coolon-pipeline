@@ -717,7 +717,7 @@ def comp_gene_v2(f0,f1,file,ed_type):
             #print(scaffold1 + 'ONE') 
 
             if scaffold0 == scaffold1 and pos0 == pos1 and gi0==gi1: #and GENEINFO = GENEINFO
-                new_file.write(scaffold0 + ' ' + pos0 + '  '+gi0+'\n') #AND WRITE GENEINFO
+                new_file.write(scaffold0 + ' ' + pos0 + ' '+gi0+'\n') #AND WRITE GENEINFO
                 
         open_f1.seek(0)
 
