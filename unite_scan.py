@@ -39,7 +39,7 @@ def u_scan(inpath):
         list_hits.append(line.strip())#line.split(",")[0].strip()
     infile.close()
     return list_hits
- aaaa#TODO CONTINUE WORKING HERE
+#TODO CONTINUE WORKING HERE
     
 if __name__ == "__main__": #sets up a main area. This will not work well if imported
     main()
