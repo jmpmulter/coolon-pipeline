@@ -19,7 +19,8 @@ cln_filename<-unlist(strsplit(input_no_ext,split="[/]"))[-2:-1]
 #skip header line
 df <- read.table(file = input, sep = ",", header = TRUE)
 
-df$group<- factor(paste0(df$Scaffold,df$Position,df$ID,df$Name))
+df$spacer<-"_"
+df$group<- factor(paste0(df$Scaffold,df$spacer,df$Position,df$spacer,df$ID,df$spacer,df$Name))
 df$type[grepl("type0",df$RunFileName)]<-0 #Control
 df$type[grepl("type1",df$RunFileName)]<-1 #Treatment
 df$type <- factor(df$type, levels = c(0,1) ,labels = c("Control","Experimental"))
