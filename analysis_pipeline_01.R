@@ -1,4 +1,4 @@
-##import files
+##import files -- working draft.
 library(descr)
 library(readr)
 library(tidyr) # to get data into "tidy" format
@@ -22,7 +22,9 @@ df <- read.table(file = input, sep = ",", header = TRUE)
 df$group<- factor(paste0(df$Scaffold,df$Position,df$ID,df$Name))
 df$type[grepl("type0",df$RunFileName)]<-0 #Control
 df$type[grepl("type1",df$RunFileName)]<-1 #Treatment
+df$type <- factor(df$type, levels = c(0,1) ,labels = c("Control","Experimental"))
 df$log_alt_div_ref<- log10(df$Ratio_Alt_div_Ref)
+
 #freq(as.ordered(df$log_alt_div_ref))
 
 #results <- gather(df, key = "type", value = "log_alt_dif_ref",factor_key = TRUE)
@@ -30,7 +32,7 @@ results<-df
 results <- group_by(results,group)
 #freq(df$type)
 #freq(results$type)
-results <- do(results, tidy(t.test(.$log_alt_div_ref,.$type,
+results <- do(results, tidy(t.test(.$log_alt_div_ref~.$type,
                                    alternative = "two.sided",
                                    #mu = 0,
                                    paired = FALSE,
@@ -39,21 +41,26 @@ results <- do(results, tidy(t.test(.$log_alt_div_ref,.$type,
 )))
 #holm_corr <-do(results,tidy(p.adjust(.$p.value, method = "holm")))
 
-freq(results$p.value)
-results_holm<-results
+#freq(results$p.value)
+#results_holm<-results
+#results_holm$adj_p<-p.adjust(results$p.value, method = "holm")
 results_fdr<-results
-results_holm$adj_p<-p.adjust(results$p.value, method = "holm")
 results_fdr$adj_p<-p.adjust(results$p.value, method = "fdr")
+
+getwd()
+write.csv(results_fdr, paste("Res",cln_filename,"fdr_corr.csv",sep="_")) #"Res_RUNNAME_holm_corr.csv"
+
+
 
 #freq(results$p.value)
 #wd<-getwd()
 #print(wd)
 #setwd(wd)
-getwd()
+
 #write.csv(results_holm, "Res_RUNNAME_holm_corr.csv") #"Res_RUNNAME_holm_corr.csv"
 #write.csv(results_fdr, "Res_RUNNAME_fdr_corr.csv")
-write.csv(results_holm, paste("Res",cln_filename,"holm_corr.csv",sep="_")) #"Res_RUNNAME_holm_corr.csv"
-write.csv(results_fdr, paste("Res",cln_filename,"fdr_corr.csv",sep="_")) #"Res_RUNNAME_holm_corr.csv"
+#write.csv(results_holm, paste("Res",cln_filename,"holm_corr.csv",sep="_")) #"Res_RUNNAME_holm_corr.csv"
+
 #df$Ref.A.[grepl("Ref.A.",df$RunFileName)]<-"Ref_A"
 #df$type[grepl("RefGA.",df$RunFileName)]<-"Ref_G"
 #Build out more of the above statements if comparing multiple files
