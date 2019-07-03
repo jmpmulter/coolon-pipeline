@@ -1,12 +1,16 @@
 #Isolate_heatmap_FBgn
-
 #Load in Heatmap
-#Isolate FBGNs, place at end of line
+#Isolate FBGNs, GM_num, place at end of line,
+#format header to be ready for excel heatmaps
+import sys
+import os
 def main():
     inpath = ""
     outpath = ""
     inpath = sys.argv[1]
     outpath = sys.argv[2]
+    
+    #print(sys.argv)
     
     if ((inpath=="")or(outpath == "")):
         print("inpath or outpath not entered. Aborting program")
@@ -25,15 +29,15 @@ def main():
         lns = ln.split(",")
         for item in lns:
             if "FBgn" in item:
-                id_split = id.split("_")
+                id_split = item.split("_")
                 break
         try:
             for i in range(0,len(id_split)):
                 if "FBgn" in id_split[i]:
                     FBgn = id_split[i]
-                    gm_num = id_split[i+1]
+                    gm_num = id_split[i+1].split("\"")[0]
                     break
-            f_out.write(ln+",,,,,,"+FBgn+","+gm_num+"\n")
+            f_out.write(ln.strip()+",,,,,,"+FBgn+","+gm_num+"\n")
         except(IndexError):
             print("Error: GM_num format is likely non-standard. skipping this line")
             f_out.write(ln+",,,,,,,\n")
@@ -43,5 +47,6 @@ def main():
     f_out.close()
     
     
-if __name__ == "main":
+if __name__ == "__main__":
+    #print("running program")
     main()
