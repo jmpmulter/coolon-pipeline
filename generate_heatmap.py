@@ -10,18 +10,18 @@ def main():
     inputs = get_input() #[outpath,ed_type,p_cutoff,src_dir]
     outpath = inputs[0]
     ed_type = inputs[1]
-    p_cutoffs = double(inputs[2]) #so that it can be compared against
+    p_cutoffs = float(inputs[2]) #so that it can be compared against
     src_dir = inputs[3]
         
     all_paths = os.listdir()
     
     ed_type_ok = []
     path_filter(all_paths,ed_type_ok,ed_type)
-    print("Number of files which passed ed_type filter:\t"+ len(ed_type_ok))
+    print("Number of files which passed ed_type filter:\t"+ str(len(ed_type_ok)))
     legend = generate_legend(ed_type_ok)
     header = gen_header(legend)
     genes = generate_keys(legend)
-    gene_data = fill_dict(genes,legend)
+    gene_data = fill_dict(genes,legend,p_cutoffs)
     make_csv(header,gene_data,outpath)
     
     
@@ -40,17 +40,17 @@ def get_input(): #input entered----> generate_heatmap.py [outpath] [a|c] [p_cuto
     if len(sys.argv)==1:
         return -1
     elif len(sys.argv)==3:
-        heat_map = sys.argv[1].strip()
+        outpath = sys.argv[1].strip()
         ed_type = sys.argv[2].strip()
         p_cutoff = ".05"
         src_dir = 0
     elif len(sys.argv)==4:
-        heat_map = sys.argv[1].strip()
+        outpath = sys.argv[1].strip()
         ed_type = sys.argv[2].strip()
         p_cutoff = sys.argv[3].strip()
         src_dir = 0
     elif len(sys.argv)==4:
-        heat_map = sys.argv[1].strip()
+        outpath = sys.argv[1].strip()
         ed_type = sys.argv[2].strip()
         p_cutoff = sys.argv[3].strip()
         src_dir = sys.argv[4] .strip()
@@ -67,7 +67,7 @@ def path_filter(all_paths,ed_type_ok,ed_type):
     elif ed_type.lower().strip() == "c":
         key_phrase = "C_to_U"
     else:
-        print(ed_type entered incorrectly) 
+        print("ed_type entered incorrectly") 
         return ["-1"]
     for path in all_paths: #filter so only the Filtered files are being considered
         if (key_phrase in path):
@@ -81,38 +81,54 @@ def generate_legend(ed_type_ok):
         legend[0][i] = ed_type_ok[i]
         
         treatment_block = ed_type_ok[i].split("[")[1].split("]")[0].strip() #Expected: "CL,OA"
-        if len(treatment_block!=2): #only applies for control only or dsechellia only trials
-            legend[1][i] = "F"+str(i)+"_"treatment_block
-        else:   
+        #print(treatment_block)
+        
+        try:
             spl = treatment_block.split(",")
             crl = spl[0]
             trt = spl[1]
             legend[1][i] = "F"+str(i)+"_"+crl+"_vs_"+trt
+        except(IndexError):
+            legend[1][i] = "F"+str(i)+"_"+treatment_block
+        
+        #if (len(treatment_block)==2): #only applies for control only or dsechellia only trials
+        #    legend[1][i] = "F"+str(i)+"_"+treatment_block
+        #else:   
+        #    spl = treatment_block.split(",")
+        #    crl = spl[0]
+        #    trt = spl[1]
+        #    legend[1][i] = "F"+str(i)+"_"+crl+"_vs_"+trt
             
     return legend
         
 def gen_header(legend):
+    #print(legend)
     header = "Scaf_num_Pos_Fbgn_Gmnum"
-    for i in range(0,len(legend)):
+    for i in range(0,len(legend[1])):
         header = header+","+legend[1][i]
+    #print("Header")
+    #print(header)
     return header
 
 def generate_keys(legend):
     genes = {}
     for file in legend[0]:
         f_in = open(file,"r")
+        group_position = get_group_column(f_in)
         f_in.seek(0)
         f_in.readline() #skips the now-processed header line
         for ln in f_in:
-            identifier = ln.split(",").strip()[0]
+            #print(ln)
+            identifier = ln.split(",")[group_position].strip()
+            #print(identifier)
             if identifier in genes:
                 continue
             else:
-                genes[identifier] = []
+                genes[identifier] = [None]*len(legend[0])
         f_in.close()
     return genes
     
-def fill_dict(genes,legend)
+def fill_dict(genes,legend,p_cutoffs):
     ids = sorted(genes.keys())
     for id in ids:
         for i in range(0,len(legend[0])):
@@ -126,8 +142,8 @@ def fill_dict(genes,legend)
             for ln in f_in:
                 if id in ln:
                     gene_found = True
-                    p_val = ln_spt = ln.split(",").strip()[p_column]
-                    if(float(p_val)<=.05):
+                    p_val = ln.split(",")[p_column].strip()
+                    if(float(p_val)<=p_cutoffs):
                         genes[id][i] = "S" #TODO confirm this line works, it may not
                     else:
                         genes[id][i] = "N" #TODO confirm this line works, it may not
@@ -144,17 +160,31 @@ def get_p_column(f_in):
             pval_column = i
             break
         else:
-            continue 
+            continue
+    f_in.seek(0)
     return pval_column
-    
+
+def get_group_column(f_in):
+    f_in.seek(0)
+    group_column = -1
+    in_header = f_in.readline().strip().split(",")
+    for i in range(0,len(in_header)):
+        if "group" in in_header[i]:
+            group_column = i
+            break
+        else:
+            continue 
+    return group_column
+
 def make_csv(header, gene_data, outpath):
     print("Generating output file with path\t"+outpath)
     gene_keys = sorted(gene_data.keys())
-    f_out = open(outpath,"rw")
+    f_out = open(outpath,"w")
     f_out.write(header+"\n")
     for key in gene_keys:
         f_out.write(key.strip())
-        for i in range(0,len(header)-1):#confirm no -1 error
+        for i in range(0,len(gene_data[key])):#confirm no -1 error
+            #print(gene_data[key])
             f_out.write(","+gene_data[key][i])
         f_out.write("\n")
     f_out.close()
