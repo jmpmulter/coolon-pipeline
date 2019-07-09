@@ -77,16 +77,20 @@ def choose_color(ln,searcher,columns):
     by_grps = process_line(searcher,ln) #Expected format: [["N","O"],["S","S","N","O"]]
     
     is_red = red_test(by_grps)#(TRUE/FALSE, "reason if TRUE, NA if False")
+    is_green = green_test(by_grps)
+    is_yellow = yellow_test(by_grps)
     if is_red[0] == True:
         return ("red",is_red[1])
-    is_green = green_test(by_grps)
+        
     if is_green[0]==True:
         return ("green",is_green[1])
-    is_yellow = yellow_test(by_grps)
+    
     if is_yellow[0]==True:
         return ("yellow",is_yellow[1])
+        
     #if nothing else works    
     return(("white","Else_logic"))
+    
     #is it green?
         #all same in groups, but groups are different from each other
         #all same in groups (w/ 1 variability), but groups are different from each other
@@ -311,12 +315,136 @@ def yellow_test(by_grps):
     t1 = y_minority_con_majority_211(by_grps)
     t2 = y_minority_con_majority_220(by_grps)
     t3 = y_minority_11_majority_310(by_grps)
+    
+    if(t1):
+        yellow = True
+        reason = "y_minority_con_majority211"
+    if(t2):
+        yellow = True
+        reason = "y_minority_con_majority_220"
+    if(t3):
+        yellow = True
+        reason = "y_minority_11_majority_310"
+    
+    
+    return((yellow,reason))
     #True conditions:
         #small consistent, large has 2 consistent and 1 and 1
         #small consistent, large has 2 consistent and 2 consistent. -> automatically mark as yellow, regardless of pattern
         #small has 1 deviancy, large has 3 consistent
-        
-        
+def y_minority_con_majority_211(by_grps):
+    """
+    Examples:
+    PASS - [[S,S],[N,N,S,O]]
+    FAIL - [[S,N],[N,N,S,O]]
+    FAIL - [[S,S],[N,N,O,O]]
+    FAIL - [[S,S],[S,S,N,O]]
+    
+    """
+    if by_grps[0][0]!=by_grps[0][1]:
+        print("Failed y_minority_con_majority_211 -- small groups do not match")
+        return False
+    big_cts = 0
+    big_ctn = 0
+    big_cto = 0
+    big_letter= ""
+    
+    for item in by_grps[1]:
+        if item=="S":
+            cts+=1
+        if item=="N":
+            ctn+=1    
+        if item=="O":
+            cto+=1
+    passed_211 = False
+    if(cts==2):
+        if(ctn==cto==1):
+            passed_211=True
+            big_letter="S"
+    elif(ctn ==2):
+        if(cts==cto==1):
+            passed_211=True
+            big_letter = "N"
+    elif(cto==2):
+        if(cts==ctn==1):
+            passed_211=True
+            big_letter = "N"
+    if(passed_211==False):
+        print("Failed y_minority_con_majority_211 -- no 2-1-1 pattern")
+        return False
+    if(by_grps[0][0]==big_letter):
+        print("Failed y_minority_con_majority_211 -- small group matches large group majority")
+        return False
+    print("Passed y_minority_con_majority_211--returning True")
+    return True
+       
+def y_minority_con_majority_220(by_grps): #TODO: Possibly make this function more selective.
+    if by_grps[0][0]!=by_grps[0][1]:
+        print("Failed y_minority_con_majority_220 -- small groups do not match")
+        return False
+    big_cts = 0
+    big_ctn = 0
+    big_cto = 0
+    big_letter= ""
+    
+    for item in by_grps[1]:
+        if item=="S":
+            cts+=1
+        if item=="N":
+            ctn+=1    
+        if item=="O":
+            cto+=1
+    passed_220 = False
+    if(cts==2):
+        if(ctn==2 or cto==2):
+            passed_220=True
+            big_letter="S"
+    elif(ctn ==2):
+        if(cts==2 or cto==2):
+            passed_220=True
+            big_letter = "N"
+    elif(cto==2):
+        if(cts==2 or ctn==2):
+            passed_220=True
+            big_letter = "N"
+    if(passed_220==False):
+        print("Failed y_minority_con_majority_220 -- no 2-1-1 pattern")
+        return False
+    print("Passed y_minority_con_majority_220 -- con_220 pattern confirmed")
+    return True
+
+def y_minority_11_majority_310(by_grps): #TODO Possibly make this function more selective.
+    if by_grps[0][0]==by_grps[0][1]:
+        print("Failed y_minority_11_majority_310 -- small groups match")
+        return False
+    
+    cts = 0
+    ctn = 0
+    cto = 0
+    big_letter = ""
+    
+    for item in by_grps[1]:
+        if item=="S":
+            cts+=1
+        if item=="N":
+            ctn+=1    
+        if item=="O":
+            cto+=1
+    if(cts or ctn or cto ==3):
+        pass
+    else:
+        print("Failed y_minority_11_majority_310 -- no majority of large group")
+        return False
+    if(cts>ctn and cts>cto):
+        big_letter = "S"
+    if(cto>ctn and cto>cts):
+        big_letter = "O"
+    if(ctn>cts and ctn>cto):
+        big_letter = "N"
+    print("Passed y_minority_11_majority_310")
+    return True
+    
+    
     
 if __name__ == "__main__":
     #print("running program")
