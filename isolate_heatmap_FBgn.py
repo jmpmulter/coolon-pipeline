@@ -264,22 +264,21 @@ def g_majority_1_dev(by_grps):
 
 
 def g_minority_1_dev(by_grps):
-"""Passed if large group is fully consistent, and both small group items are different to each other and the large group letter
+    """Passed if large group is fully consistent, and both small group items are different to each other and the large group letter
     Examples:
     Large - all S, small O,N -> TRUE
     Large - all S, small S,N -> False
     Large - all S, small N,N -> False
     
     This behavior is because the second test case is already picked up by Red test, and I want to avoid confilcts of these labels.
-    The third case is because this is already picked up by the first green test.
-"""
+    The third case is because this is already picked up by the first green test."""
     if by_grps[0][0]==by_grps[0][1]:
         print("Failed g_1dev_t2 -- small groups match")
         return False
     
-    big_cts = 0
-    big_ctn = 0
-    big_cto = 0
+    cts = 0
+    ctn = 0
+    cto = 0
     big_letter= ""
     
     for item in by_grps[1]:
@@ -344,9 +343,9 @@ def y_minority_con_majority_211(by_grps):
     if by_grps[0][0]!=by_grps[0][1]:
         print("Failed y_minority_con_majority_211 -- small groups do not match")
         return False
-    big_cts = 0
-    big_ctn = 0
-    big_cto = 0
+    cts = 0
+    ctn = 0
+    cto = 0
     big_letter= ""
     
     for item in by_grps[1]:
@@ -382,9 +381,9 @@ def y_minority_con_majority_220(by_grps): #TODO: Possibly make this function mor
     if by_grps[0][0]!=by_grps[0][1]:
         print("Failed y_minority_con_majority_220 -- small groups do not match")
         return False
-    big_cts = 0
-    big_ctn = 0
-    big_cto = 0
+    cts = 0
+    ctn = 0
+    cto = 0
     big_letter= ""
     
     for item in by_grps[1]:
