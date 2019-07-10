@@ -240,7 +240,7 @@ def g_majority_1_dev(by_grps):
             ctn+=1    
         if item=="O":
             cto+=1
-    if(cts or ctn or cto ==3):
+    if(cts==3 or ctn==3 or cto==3):
         pass
     else:
         print("Failed g_1dev_t1 -- no majority of large group")
@@ -288,7 +288,7 @@ def g_minority_1_dev(by_grps):
             ctn+=1    
         if item=="O":
             cto+=1
-    if(cts or ctn or cto ==4):
+    if(cts==4 or ctn==4 or cto ==4):
         pass
     else:
         print("Failed g_1dev_t2 -- no large group consistency")
@@ -429,7 +429,7 @@ def y_minority_11_majority_310(by_grps): #TODO Possibly make this function more 
             ctn+=1    
         if item=="O":
             cto+=1
-    if(cts or ctn or cto ==3):
+    if(cts==3 or ctn==3 or cto ==3):
         pass
     else:
         print("Failed y_minority_11_majority_310 -- no majority of large group")
