@@ -21,7 +21,7 @@ def main():
     f_in.seek(0)
     header = f_in.readline().strip()
     #NOTE- changed group definitions below
-    grp_toxins =["OA","HA","NONI","OAHA"] 
+    grp_toxins =["OAHA","OA","HA","NONI"] #Putting OAHA before OA so searching works better. OAHA Can't really be moved.
     grp_fruit = ["FIG","LDOPA"]
 
     columns = align_columns(header,grp_toxins,grp_fruit)
@@ -69,16 +69,25 @@ def set_searcher(columns): #Searcher format: [[fruit list[index,label]],[toxin l
             output[1].append([item[0],item[1]])
         else:
             print("ERROR IN TYPEING -- More than 2 types")
+    print("\noutput of set_searcher")
+    print(output)
     return output
             
     
 
 def choose_color(ln,searcher,columns):
+    
+    print("\n\n"+ln+"\n")
     by_grps = process_line(searcher,ln) #Expected format: [["N","O"],["S","S","N","O"]]
     
     is_red = red_test(by_grps)#(TRUE/FALSE, "reason if TRUE, NA if False")
+    print("is_red"+str(is_red[0]))
     is_green = green_test(by_grps)
+    print("is_green"+str(is_green[0]))
     is_yellow = yellow_test(by_grps)
+    print("is_yellow"+str(is_yellow[0]))
+    
+    
     if is_red[0] == True:
         return ("red",is_red[1])
         
@@ -106,19 +115,45 @@ def choose_color(ln,searcher,columns):
     
 def align_columns(header,grp_toxins,grp_fruit):
     columns = []
+    
     hs = header.split(",")
+    #print("\nheader")
+    #print(header)
+    #print("\ngrp_toxins")
+    #print(grp_toxins)
+    #print("\ngrp_fruit")
+    #print(grp_fruit)
+    #print("\n")
     for i in range(0,len(hs)):
-        for thing in grp_fruit:
+        for thing in grp_fruit: #For now this section is fine, but it could break in the future
+        #TODO: re-enforce this for loop like the item in grp_toxins: loop
             if thing in hs[i].strip():
-                columns.append((i,item,0))
+                columns.append((i,thing,0))
+               
         for item in grp_toxins:
-            if item in hs[i].strip():
-                columns.append((i,item,1)) #(index,item_at_index,group#) #0 = nontoxin, 1=toxin
+            if item in hs[i].strip():               
+                new_term = True
+                for j in range(0,len(columns)):
+                    if item==columns[j][1]: # if the classification (OA vs OAHA) is already in
+                        new_term = False
+                for k in range(0,len(columns)):
+                    if i==columns[k][0]: # if the index where this supposedly is is already in (prevents OA from triggering for OAHA)
+                        new_term = False
+                if(new_term):
+                    columns.append((i,item,1)) #(index,item_at_index,group#) #0 = nontoxin, 1=toxin
+               
+    #print(columns)
+    #print("ALIGN")
     return columns  
 def process_line(searcher,ln):
+    print("\n")
+    print(searcher)
+    print("\n")
     by_grps = [[],[]]
     lns = ln.split(",")
+    #print("len(searcher)\t"+str(len(searcher)))
     for i in range(0,len(searcher)):
+        #print("len(searcher[i])\t"+str(len(searcher[i])))
         for item in searcher[i]:
             by_grps[i].append(lns[item[0]])
     return by_grps
@@ -147,25 +182,55 @@ def r_same_test(by_grps):
                 return False
     print("True response for r_same_test: all target entries are the same")
     return True
-def r_same_less1_test(by_grps):
+def r_same_less1_test(by_grps): #possibly broken now, not picking anything up
     first_letter = by_grps[0][0]
-    num_deviations = 0
-    responses = ["S","N","O"]
-    for resp in responses:
-        deviancy = 0
-        for grp in by_grps:
-            for item in grp:
-                if item == resp:
-                    pass
-                else:
-                    deviancy+=1
-                    if(deviancy>1):
-                        break
-        if deviancy ==1:
-            print("True response for r_same_less1_test- all same with one exception")
-            return True
-    print("False response for r_same_less1_test- more than 1 difference for all possible responses")
-    return False
+    deviancy = 0
+    cts = 0
+    ctn = 0
+    cto = 0
+    
+    for thing in by_grps:
+        for item in thing:
+            if item=="S":
+                cts+=1
+            elif item=="N":
+                ctn+=1
+            elif item=="O":
+                cto+=1
+    
+    responses = [cts,ctn,cto]
+    
+    if 5 in responses:
+        pass
+    else:
+        print("Failed r_same_less1_test -- 5! in responses")
+        return False
+    
+    if 1 in responses:
+        print("Passed r_same_less1_test -- 1 in responses")
+        return True
+    else:
+        print("Failed r_same_less1_test -- 1 NOT in responses")
+        return False
+    
+    
+    
+    #responses = ["S","N","O"]
+    #for resp in responses:
+    #    deviancy = 0
+    #    for grp in by_grps:
+    #        for item in grp:
+    #            if item == resp:
+    #                pass
+    #            else:
+    #                deviancy+=1
+    #                if(deviancy>1):
+    #                    break
+    #    if deviancy ==1:
+    #        print("True response for r_same_less1_test- all same with one exception")
+    #        return True
+    #print("False response for r_same_less1_test- more than 1 difference for all possible responses")
+    #return False
     #for item in responses:
         #see if all same with maximum 1 deviancy
         #if deviancy >1, try next letter
@@ -223,7 +288,10 @@ def g_ideal_1_dev(by_grps):
     #inconsist_bigger
     #inconsist_smaller
     
-def g_majority_1_dev(by_grps):
+def g_majority_1_dev(by_grps): #TODO possibly a bug here.
+    #print("\n\t\t\t\t\t\t\t by_grps:")
+    #print(by_grps)
+    #print("\n")
     if by_grps[0][0] != by_grps[0][1]:
         print("Failed g_1dev_t1 -- no small group consistency")
         return False
@@ -240,19 +308,30 @@ def g_majority_1_dev(by_grps):
             ctn+=1    
         if item=="O":
             cto+=1
+        #print("\n")    
+        #print("\t\t\t\tcts== "+str(cts))
+        #print("\t\t\t\tcto== "+str(cto))
+        #print("\t\t\t\tctn== "+str(ctn))
+        #print("\n")
+        
     if(cts==3 or ctn==3 or cto==3):
         pass
+        #print("\t\tcts== "+str(cts))
+        #print("\t\tcto== "+str(cto))
+        #print("\t\tctn== "+str(ctn))
     else:
         print("Failed g_1dev_t1 -- no majority of large group")
         return False
-    if(cts>ctn and cts>cto):
+    if(cts==3):
         majority = "S"
-    if(cto>ctn and cto>cts):
+    if(cto==3):
         majority = "O"
-    if(ctn>cts and ctn>cto):
+    if(ctn==3):
         majority = "N"
+    #print("\t Majority "+majority+"\t by_grps[0][0] "+ by_grps[0][0])
     if majority == by_grps[0][0]:
-        print("Faield g_1dev_t1 -- small group and large group majority are the same")
+        print("Failed g_1dev_t1 -- small group and large group majority are the same")
+        
         return False
     print("Confirmed g_1dev_t1 -- small group and large group majority are different")
     return True
