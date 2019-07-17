@@ -30,11 +30,10 @@ tmp <- lapply(tmp, function(x) {gsub("^S$", 2, x) })
 tmp<-data.frame(lapply(tmp,as.numeric))
 df[,2:10]<-tmp[,2:10]
 
-#df$intermediate_name[df$Dmel.Ortholog=="-"]<-df$GM_num
-#df$intermediate_name[is.na(df$intermediate_name)]<-df$Dmel.Ortholog
 
 df$intermediate_name<-df$Dmel.Ortholog
 df$intermediate_name[df$intermediate_name=="-"]<-df$GM_num
+df$intermediate_name[df$intermediate_name=="Act87E <newline> Act57B <newline> Act88F"]<-"Actin"
 
 hold<-data.frame(apply(df[c("Scaf_num_Pos_Fbgn_Gmnum")],1,function(x) {strsplit(as.character(x),"_")}),row.names = c("t1","scaf","pos","FBGN","GMNUM"))
 hold2<-data.frame(t(hold))
@@ -45,41 +44,34 @@ comb<-merge.data.frame(df,hold3)
 
 
 
-df$spl<- strsplit(as.character(df$Scaf_num_Pos_Fbgn_Gmnum),"_")
+#df$spl<- strsplit(as.character(df$Scaf_num_Pos_Fbgn_Gmnum),"_")
 
-df$pos<-apply(df[,c("spl")],1,function(x){x[[]]})
+#df$pos<-apply(df[,c("spl")],1,function(x){x[[]]})
 
 #by(df, 1:nrow(df),function(row) str(row$Non.Sig.Hits))
 
 #df$scaf<- strsplit(as.character(df$Scaf_num_Pos_Fbgn_Gmnum),"_")
 
-
-df$scaf<- spl[[df$row]][2]
-
-
-df$pos<- strsplit(as.character(df$Scaf_num_Pos_Fbgn_Gmnum),"_")
-df$pos<- df$pos[[1]][3]
-
-
-
-df$new_row_names<-paste0(df$intermediate_name,"Scaf",df$scaf,"Pos",df$pos,
-                         collapse = "_")#strsplit(df$Scaf_num_Pos_Fbgn_Gmnumm,as.character("_"),)[3],collapse = "_")
+comb$new_row_names<-paste(comb$intermediate_name,"Scaf",comb$scaf,"Pos",comb$pos,
+                         sep = "_")#strsplit(df$Scaf_num_Pos_Fbgn_Gmnumm,as.character("_"),)[3],collapse = "_")
 
 #colnames(df)
-names(df)[2]<-"FIG"
-names(df)[3]<-"HA"
-names(df)[4]<-"LDOPA"
-names(df)[5]<-"NONI"
-names(df)[6]<-"OAHA"
-names(df)[7]<-"OA"
-names(df)[1]<-"Dmel"
-row.names(df)<-df$new_row_names #TODO Edit this to be DMEL_SCAF_POS
+names(comb)[3]<-"FIG"
+names(comb)[4]<-"HA"
+names(comb)[5]<-"LDOPA"
+names(comb)[6]<-"NONI"
+names(comb)[7]<-"OAHA"
+names(comb)[8]<-"OA"
+names(comb)[2]<-"Dmel"
+row.names(comb)<-comb$new_row_names #TODO Edit this to be DMEL_SCAF_POS
 
 
-vis_1<-superheat(df[,2:7],title = "Heatmap of Editing Presence Across Treatments",
-                 left.label.size = 0.2,bottom.label.size = 0.2,left.label.text.size=2,
+vis_1<-superheat(comb[,3:8],title = "Heatmap of Editing Presence Across Treatments",
+                 left.label.size = 0.4,left.label.text.size=3,
+                 bottom.label.size = 0.2,
                  grid.hline.col = "white",grid.vline.col = "white",
                  legend.breaks = c(0,1,2),
+                 
                  )
 
 
