@@ -16,11 +16,15 @@ def main():
     #Get input
     #translate the specific gene locus notation from the xlsx files into a scaffold and position and gmnum for each line
     
-    #use the GMNUM to look up the gene coordinates of the whole gene in the 
-    
         #incoming formats
             #scaffold_0_20105182_FBgn0178391_GM23525
             #scaffold_3754_342_FBgn0255867_18SrRNA:GM27734
+    
+    #use the GMNUM to look up the gene coordinates of the whole gene in the gff3
+        #skipping lines that begin with #
+        #use the filt_GFF3 from the pipeline (from any run of it)
+        #Make sure to consider strand! Need the reverse transcript of the strand if -.
+    #Use coordinates to pull that section of the genome from FASTA
 
     
     #COPY/PASTED Code below this; ignore.
