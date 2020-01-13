@@ -13,35 +13,87 @@ def main():
     os.chdir(dir_path)
     outpath = ""
     try:
-        outpath= sys.argv[1]
+        inpath= sys.argv[1]
+    except IndexError:
+        inpath = input("Input file name not entered in command line. Enter name of Input file")
+    try:
+        outpath= sys.argv[2]
     except IndexError:
         outpath = input("Output file name not entered in command line. Enter name of output file")
+    try:
+        ed_type= sys.argv[3]
+    except IndexError:
+        ed_type = input("ed_type not entered in command line. Enter ed_type")
+        
+        
+    if ((inpath=="")or(outpath == "")or(ed_type=="")):
+        print("inpath or outpath or ed_type not entered. Aborting program")
+        sys.exit()
+    
+    f_in = open(inpath,"r")
+    f_out = open(outpath,"w")
+    f_in.seek(0)
+    
     
     all_paths = os.listdir()
     SCAN_list = []
     for path in all_paths: #filter so only the Filtered files are being considered
-        if ("SCAN" in path): #TODO edit this to only look at the PXL and other relevant files
-            print("Detected SCAN file with path:\t"+path)
+        if ("PXL" in path): #TODO Confirm this edit worked TODO edit this to only look at the PXL and other relevant files
+            print("Detected PXL file with path:\t"+path)
             SCAN_list.append(path)
     
     compile_stats(SCAN_list,inpath, outpath) #ADD INPATH, ED Type in command line
     
 def compile_stats(SCAN_list,inpath, outpath, ed_type):
     #TODO Write header line
+    #header format: "uniqueID, CL_delta, FIG_delta, HA_delta, LDOPA_delta, NONI_delta, OAHA_delta, OA_delta, CL_avg, FIG_avg, HA_avg, LDOPA_avg, NONI_avg, OAHA_avg, OA_avg"
+    #header puts most relevant information up front, but more detailed work a bit futher back
     #Vars:
     type_avg = [-1,-1,-1,-1,-1,-1] #An array to hold the average of each type's values
+    #NB: Tpye avg should use ordering F0_CL_vs_FIG	F1_CL_vs_HA	F2_CL_vs_LDOPA	F3_CL_vs_NONI	F4_CL_vs_OAHA	F5_CL_vs_OA to agree with convention used earlier
     cl_avg = -1
     #for each line in input CSV:
-        #Get unique ID
-        #Make a matching line in outpath
-        #Look through all 6 PXLs
-            #If edit in PXL:
-                #if CL values not yet found:
-                    #Grab CL values
-                    #average these values and set cl_val to them
-                #Grab Type Values
-                    #Average type_values and set appropriate spot in type_avg to them.
-            #If edit not in PXL:
-                #Set type_avg == -1 at appropriate spot.
-        #Once all the files ahve been looked at, line everything up and write them to the outfile.
-            
+        #if line == 1
+            #Read (and pop?) the first line of the csv to ignore the headers there
+        cl_avg_found = False
+        #else:
+            scaf_pos = parse_unique_ID(line)#Get unique ID
+            to_write = "" #TODO write this line later
+            #Make a matching line in outpath
+            #Look through all 6 PXLs
+            for pxl in SCAN_list:
+                Open_PXL = open(pxl,"r")
+                for ln in Open_PXL:
+                    if ln.split(",")[0]==">":
+                        continue
+                    else:
+                    #If edit in ln:
+                        if ln.split(",")[0]==scaf_pos[0]:
+                            if ln.split(",")[1]==scaf_pos[1]:
+                                if cl_avg_found==False:
+                                #if CL values not yet found:
+                                    #Grab CL values from the next 3 lines
+                                    #average these values and set cl_val to them
+                                    cl_avg_found= True
+                                #Grab Type Values
+                                    #Average type_values and set appropriate spot in type_avg to them.
+                            #If edit not in PXL:
+                                #Set type_avg == -1 at appropriate spot.
+                #Close PXL
+        #Once all the files have been looked at, line everything up and write them to the outfile.
+        #reset all vars
+def parse_unique_ID(line):
+#takes in a string of the line, returns an array with the unique ID elements
+#Returns [scaf,pos]
+#TODO: Potential problem that this erases some datalines when two edits occur at the same point. this was an issue in the past requiring several fixes.
+#As long as the quantities can be duplicated in the output file, the above should not pose a serious problem.
+raw_id = line.split(",")[0]
+raw_spl = raw_id.split("_")
+return raw_spl[1:3]
+#raw_id format scaffold_0_1004752_FBgn0179780_GM24918
+#raw_spl = [scaffold,0,1004752,FBgn0179780,GM24918]
+
+
+
+
+ 
