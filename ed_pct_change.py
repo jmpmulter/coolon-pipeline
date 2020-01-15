@@ -86,6 +86,7 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
                 type_avg[6] = vals[1] 
             type_avg[0]=vals[0] #this will trigger in any condition where val is found. it is overwritten a few times but this shouldn't matter because it's the same value in all cases
          
+        deltas = calc_deltas(type_avg)
         
         out_file.write(to_write+"\n")
         
@@ -164,10 +165,12 @@ def scan_pxl(pxl):
     return vals
     
 def ed_pct_of_next_3_lines(Open_PXL):
+    #meat of this script. Pulls the ref and alt values from the next 3 lines, calculates 
     lines_3 = []
     vals_3 = []
     ref_alt_3 = []
-    ed_pct_3 = []
+    ref_sum = 0
+    alt_sum = 0
     ed_pct = 0
     #just going to hardcode getting the next 3 lines of info
     
@@ -186,15 +189,15 @@ def ed_pct_of_next_3_lines(Open_PXL):
         
     for ra_pair in ref_alt_3:
         #ra_pair = ["41","8"]
-        ra_pair_num = [int(ra_pair[0]),int(ra_pair[1])]
-        ed_pct = ((ra_pair_num[1])/(ra_pair_num[0]+ra_pair_num[1]))
-        ed_pct_3.append(ed_pct)
-        #ed_pct = alt/(alt+ref)
+        ref_sum+=int(ra_pair[0]) #sum all the ref counts
+        alt_sum+=int(ra_pair[1])
+        
+    ed_pct = ((alt_sum)/(ref_sum+alt_sum))
     
-    ed_pct = mean(ed_pct_3)
     "{0:.5f}".format(ed_pct) #So that it's not a crazy long product of division
     
     return ed_pct
 
-
+def calc_deltas(type_avg):
+    #calculates
     
