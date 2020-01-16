@@ -10,6 +10,9 @@ import sys
 import os
 import math
 from statistics import mean 
+import copy
+import Decimal
+
 def main():
     dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
     os.chdir(dir_path)
@@ -60,7 +63,7 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
         
     for line in in_file:
     #for each line in input CSV:
-        cl_avg_found = False
+        #cl_avg_found = False
         scaf_pos = parse_unique_ID(line)#Get unique ID [scaf,pos]
         to_write = line.split(",")[0]+"," #Starts off with the unique ID and ,
         
@@ -85,13 +88,21 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
             elif(("OA" in pxl)and ("HA" not in pxl)):
                 type_avg[6] = vals[1] 
             type_avg[0]=vals[0] #this will trigger in any condition where val is found. it is overwritten a few times but this shouldn't matter because it's the same value in all cases
-         
-        deltas = calc_deltas(type_avg)
         
+        deltas = calc_deltas(type_avg)
+        for item in deltas:
+            to_write.append(","+item)
+        for item in type_avg:
+            to_write.append(","+item)
         out_file.write(to_write+"\n")
+        to_write = ""
+        type_avg = [-1,-1,-1,-1,-1,-1,-1]
+    in_file.close()
+    out_file.close()
+    print("Output File constructed successfully -- closing program.")    
         
         #Once all the files have been looked at, line everything up and write them to the outfile.
-        reset_temps(type_avg, cl_avg, cl_avg_found, to_write)
+        #reset_temps(type_avg, cl_avg, cl_avg_found, to_write)
         #reset all vars
         
         
@@ -194,10 +205,29 @@ def ed_pct_of_next_3_lines(Open_PXL):
         
     ed_pct = ((alt_sum)/(ref_sum+alt_sum))
     
-    "{0:.5f}".format(ed_pct) #So that it's not a crazy long product of division
+    return "{0:.5f}".format(str(ed_pct)) #So that it's not a crazy long product of division
+    #NOTE: the return in the line above may cause bugs.
     
-    return ed_pct
+    #return ed_pct
 
 def calc_deltas(type_avg):
-    #calculates
+    #calculates the change in editing percent at the given sites. Formula is (treatment ed pct)-(control ed pct)
+    
+    raw = copy.deepcopy(type_avg)
+    for i in range(0,len(raw)):
+        raw[i]=string(raw[i])
+        
+    deltas = [0,0,0,0,0,0,0]
+    #type_avg = [-1,-1,-1,-1,-1,-1,-1] #An array to hold the average of each type's values
+    #NB: Tpye avg should use ordering CL, FIG, HA, LDOPA, NONI,OAHA,OA to agree with convention used earlier
+    #CL = raw[0]
+    for i in range(1,len(raw)):
+        if(raw[i]=="-1"):
+            deltas[i]= "NA"
+        else:
+            deltas[i]="{+0:.5f}".format(Decimal(raw[i])-Decimal(raw[0]))
+        
+    return deltas
+    
+    
     
