@@ -93,10 +93,14 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
         
         deltas = calc_deltas(type_avg)
         for item in deltas:
-            to_write.append(","+item)
+            to_write+=","
+            to_write+=str(item)
         for item in type_avg:
-            to_write.append(","+item)
-        out_file.write(to_write+"\n")
+            to_write+=","
+            to_write+=str(item)
+            #to_write.append(","+item) #OLD, DELETE 
+        to_write+="\n"
+        out_file.write(to_write)
         to_write = ""
         type_avg = [-1,-1,-1,-1,-1,-1,-1]
     in_file.close()
@@ -153,6 +157,8 @@ def scan_pxl(pxl, scaf_pos):
     for ln in Open_PXL:
         if ln.split("\t")[0]=="^":
             continue
+        if ln=="\n":
+            continue #there is a trailing \n at the end of the PXL files
         else:
         #If edit in ln:
             #DEBUG BLOCK
@@ -171,7 +177,14 @@ def scan_pxl(pxl, scaf_pos):
             #print("\n\n\n")
             
             if ln.split("\t")[0].split("_")[1]==scaf_pos[0]:
+                #DEBUG BLOCK
+                #print("scaf match")
+                #print("\nln_pos: ")
+                #print(ln.split("\t")[1])
+                #print("pos: ")
+                #print(scaf_pos[1])
                 if ln.split("\t")[1]==scaf_pos[1]:
+                    print("Match found!")
                     cl_ed_pct = ed_pct_of_next_3_lines(Open_PXL)
                     tmnt_ed_pct = ed_pct_of_next_3_lines(Open_PXL)
                     
@@ -232,7 +245,7 @@ def calc_deltas(type_avg):
     
     raw = copy.deepcopy(type_avg)
     for i in range(0,len(raw)):
-        raw[i]=string(raw[i])
+        raw[i]=str(raw[i])
         
     deltas = [0,0,0,0,0,0,0]
     #type_avg = [-1,-1,-1,-1,-1,-1,-1] #An array to hold the average of each type's values
