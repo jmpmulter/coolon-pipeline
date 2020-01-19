@@ -11,7 +11,7 @@ import os
 import math
 from statistics import mean 
 import copy
-import Decimal
+#import Decimal
 
 def main():
     dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
@@ -37,7 +37,8 @@ def main():
         
     SCAN_list = assemble_SCAN_list(ed_type)
     
-    compile_stats(SCAN_list,inpath, outpath) #ADD INPATH, ED Type in command line
+    compile_stats(SCAN_list,inpath, outpath, ed_type)
+    
     
 def compile_stats(SCAN_list,inpath, outpath, ed_type):
     in_file = open(inpath,"r")
@@ -65,12 +66,13 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
     #for each line in input CSV:
         #cl_avg_found = False
         scaf_pos = parse_unique_ID(line)#Get unique ID [scaf,pos]
+        print(scaf_pos) #DEBUG
         to_write = line.split(",")[0]+"," #Starts off with the unique ID and ,
         
         #Make a matching line in outpath
         #Look through all 6 PXLs
         for pxl in SCAN_list:
-            vals = scan_pxl(pxl)
+            vals = scan_pxl(pxl, scaf_pos)
             if((vals[0]==-1)and(vals[1]==-1)):
                 continue
                 #skips if no match was found.
@@ -144,15 +146,30 @@ def assemble_SCAN_list(ed_type):
                     print("Ignored file because ed_type does not match mode: c")  
     return SCAN_list
 
-def scan_pxl(pxl):
+def scan_pxl(pxl, scaf_pos):
     vals = [-1,-1] #CL, avg
     Open_PXL = open(pxl,"r")
     Open_PXL.seek(0)
     for ln in Open_PXL:
-        if ln.split("\t")[0]==">":
+        if ln.split("\t")[0]=="^":
             continue
         else:
         #If edit in ln:
+            #DEBUG BLOCK
+            #print("\n\n\nscaf_pos\t")
+            #print(scaf_pos)
+            #print("ln\t")
+            #print(ln)
+            #print("ln.split('t')\t")
+            #print(ln.split("\t"))
+            #print("ln.split('t')[0]\t")
+            #print(ln.split("\t")[0])
+            #print("ln.split('t')[0].split('_')\t")
+            #print(ln.split("\t")[0].split("_"))
+            #print("ln.split('t')[0].split('_')[1]\t")
+            #print(ln.split("\t")[0].split("_")[1])
+            #print("\n\n\n")
+            
             if ln.split("\t")[0].split("_")[1]==scaf_pos[0]:
                 if ln.split("\t")[1]==scaf_pos[1]:
                     cl_ed_pct = ed_pct_of_next_3_lines(Open_PXL)
@@ -186,7 +203,7 @@ def ed_pct_of_next_3_lines(Open_PXL):
     #just going to hardcode getting the next 3 lines of info
     
     for i in range(0,3):
-        lines_3[].append(Open_PXL.readline().strip())
+        lines_3.append(Open_PXL.readline().strip())
         #line format: ^	./intermeds/NVC_a_type0_CL_Galstep87_ON_DATA_22_86_FILT_GENES.txt	A = 41 G = 8	ID=gene:FBgn0179780;Name=GM24918;biotype=protein_coding;gene_id=FBgn0179780;logic_name=flybase
     for ln in lines_3:
         vals_3.append(ln.split("\t")[2])
@@ -230,4 +247,5 @@ def calc_deltas(type_avg):
     return deltas
     
     
-    
+if __name__ == "__main__": #sets up a main area. This will not work well if imported
+    main()
