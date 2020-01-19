@@ -11,7 +11,7 @@ import os
 import math
 from statistics import mean 
 import copy
-#import Decimal
+from decimal import *
 
 def main():
     dir_path = os.path.dirname(os.path.realpath(__file__)) #to figure out where the program is being executed. This is home base
@@ -66,8 +66,13 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
     #for each line in input CSV:
         #cl_avg_found = False
         scaf_pos = parse_unique_ID(line)#Get unique ID [scaf,pos]
+        
+        if(scaf_pos==[]):
+            #attempting to fix the balnk item bug
+            continue
+        
         print(scaf_pos) #DEBUG
-        to_write = line.split(",")[0]+"," #Starts off with the unique ID and ,
+        to_write = line.split(",")[0]#+"," #Starts off with the unique ID and ,
         
         #Make a matching line in outpath
         #Look through all 6 PXLs
@@ -98,6 +103,7 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
         for item in type_avg:
             to_write+=","
             to_write+=str(item)
+        to_write.replace("-1","NA")
             #to_write.append(","+item) #OLD, DELETE 
         to_write+="\n"
         out_file.write(to_write)
@@ -152,6 +158,8 @@ def assemble_SCAN_list(ed_type):
 
 def scan_pxl(pxl, scaf_pos):
     vals = [-1,-1] #CL, avg
+    #Debug:
+    #print("Looking at pxl:\t", pxl)
     Open_PXL = open(pxl,"r")
     Open_PXL.seek(0)
     for ln in Open_PXL:
@@ -183,7 +191,7 @@ def scan_pxl(pxl, scaf_pos):
                 #print(ln.split("\t")[1])
                 #print("pos: ")
                 #print(scaf_pos[1])
-                if ln.split("\t")[1]==scaf_pos[1]:
+                if str(ln.split("\t")[1]).strip()==str(scaf_pos[1]).strip():
                     print("Match found!")
                     cl_ed_pct = ed_pct_of_next_3_lines(Open_PXL)
                     tmnt_ed_pct = ed_pct_of_next_3_lines(Open_PXL)
@@ -219,6 +227,7 @@ def ed_pct_of_next_3_lines(Open_PXL):
         lines_3.append(Open_PXL.readline().strip())
         #line format: ^	./intermeds/NVC_a_type0_CL_Galstep87_ON_DATA_22_86_FILT_GENES.txt	A = 41 G = 8	ID=gene:FBgn0179780;Name=GM24918;biotype=protein_coding;gene_id=FBgn0179780;logic_name=flybase
     for ln in lines_3:
+        #print(ln.split("\t")) #debug
         vals_3.append(ln.split("\t")[2])
         
     for val in vals_3:
@@ -235,7 +244,7 @@ def ed_pct_of_next_3_lines(Open_PXL):
         
     ed_pct = ((alt_sum)/(ref_sum+alt_sum))
     
-    return "{0:.5f}".format(str(ed_pct)) #So that it's not a crazy long product of division
+    return "{0:.5f}".format(ed_pct) #So that it's not a crazy long product of division
     #NOTE: the return in the line above may cause bugs.
     
     #return ed_pct
@@ -255,7 +264,7 @@ def calc_deltas(type_avg):
         if(raw[i]=="-1"):
             deltas[i]= "NA"
         else:
-            deltas[i]="{+0:.5f}".format(Decimal(raw[i])-Decimal(raw[0]))
+            deltas[i]="{0:+.5f}".format(Decimal(raw[i])-Decimal(raw[0]))
         
     return deltas
     
