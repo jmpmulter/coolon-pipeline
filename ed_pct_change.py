@@ -103,7 +103,7 @@ def compile_stats(SCAN_list,inpath, outpath, ed_type):
         for item in type_avg:
             to_write+=","
             to_write+=str(item)
-        to_write.replace("-1","NA")
+        to_write = to_write.replace("-1","NA")
             #to_write.append(","+item) #OLD, DELETE 
         to_write+="\n"
         out_file.write(to_write)
